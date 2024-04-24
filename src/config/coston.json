@@ -1,0 +1,1075 @@
+[
+  {
+    "feed": { "category": 1, "name": "FLR/USD" },
+    "sources": [
+      {
+        "exchange": "coinbasepro",
+        "symbol": "FLR/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "FLR/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "FLR/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "SGB/USD" },
+    "sources": [
+      {
+        "exchange": "gate",
+        "symbol": "SGB/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "SGB/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "XRP/USD" },
+    "sources": [
+      {
+        "exchange": "bitget",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "XRP/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "XRP/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "XRP/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "LTC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "LTC/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "LTC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "LTC/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "LTC/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "LTC/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "LTC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "LTC/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "LTC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "XLM/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "XLM/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "XLM/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "XLM/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "DOGE/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "DOGE/USDT"
+      },
+
+      {
+        "exchange": "bitget",
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "DOGE/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DOGE/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "DOGE/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ADA/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ADA/USDT"
+      },
+
+      {
+        "exchange": "bitget",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ADA/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ADA/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ADA/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ALGO/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ALGO/USDT"
+      },
+
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ALGO/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ALGO/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ALGO/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ALGO/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ALGO/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ALGO/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "BTC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "BTC/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "BTC/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "BTC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ETH/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ETH/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ETH/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ETH/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "FIL/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "FIL/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "FIL/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "FIL/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "FIL/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "FIL/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "FIL/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "FIL/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "FIL/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ARB/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ARB/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ARB/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ARB/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ARB/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ARB/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ARB/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ARB/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ARB/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "AVAX/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "AVAX/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "AVAX/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "AVAX/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "AVAX/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "BNB/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "BNB/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "BNB/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "BNB/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "BNB/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "BNB/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "MATIC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "MATIC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "MATIC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "MATIC/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "MATIC/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "MATIC/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "MATIC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "MATIC/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "MATIC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "SOL/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "SOL/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "SOL/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "SOL/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "SOL/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "USDC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "USDC/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "USDC/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "USDC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "USDC/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "USDC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "USDT/USD" },
+    "sources": [
+      {
+        "exchange": "coinbasepro",
+        "symbol": "USDT/USD"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "XDC/USD" },
+    "sources": [
+      {
+        "exchange": "bitget",
+        "symbol": "XDC/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "XDC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "XDC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "TRX/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "TRX/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "DOT/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "DOT/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DOT/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "DOT/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "DOT/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "LINK/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "LINK/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "LINK/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "LINK/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "LINK/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "TON/USD" },
+    "sources": [
+      {
+        "exchange": "gate",
+        "symbol": "TON/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "TON/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "TON/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ICP/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ICP/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ICP/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ICP/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ICP/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "SHIB/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "SHIB/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "SHIB/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "SHIB/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "SHIB/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "DAI/USD" },
+    "sources": [
+      {
+        "exchange": "bitget",
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "DAI/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DAI/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "DAI/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "BCH/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "BCH/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "BCH/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "BCH/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "BCH/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "BCH/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "BCH/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "BCH/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "BCH/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ATOM/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ATOM/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ATOM/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ATOM/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ATOM/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "UNI/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "UNI/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "UNI/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "UNI/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "LEO/USD" },
+    "sources": [
+      {
+        "exchange": "gate",
+        "symbol": "LEO/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "LEO/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ETC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ETC/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ETC/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "ETC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "INJ/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "INJ/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "INJ/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "INJ/USD"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "INJ/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "INJ/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "INJ/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "INJ/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "INJ/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 2, "name": "EUR/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "EUR/USDT"
+      },
+
+      {
+        "exchange": "cryptocom",
+        "symbol": "EUR/USDT"
+      }
+    ]
+  }
+]

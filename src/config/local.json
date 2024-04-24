@@ -1,0 +1,46 @@
+[
+  {
+    "feed": { "category": 1, "name": "BTC/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "BTC/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "BTC/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ETH/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ETH/USDT"
+      },
+      {
+        "exchange": "coinbasepro",
+        "symbol": "ETH/USDT"
+      }
+    ]
+  },
+
+  {
+    "feed": { "category": 1, "name": "USDT/USD" },
+    "sources": [
+      {
+        "exchange": "coinbasepro",
+        "symbol": "USDT/USD"
+      }
+    ]
+  }
+]
