@@ -1,0 +1,24 @@
+workflow:
+  rules:
+  - if: '$CI_OPEN_MERGE_REQUESTS != null && ($CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "webide")'
+    when: never
+  - when: always
+
+build-container:
+  stage: build
+  needs: []
+  image: gcr.si/cts/build-oci:1.3.0@sha256:af8fd5a7f8bf74037741f8a831209d66078d94251dd155df6d61b61a9f922bf7
+  script: [ "/build.sh" ]
+  variables:
+    CTS_BUILD_CACHE_REPO: ${CI_REGISTRY_IMAGE}/cache
+    CTS_BUILD_DOCKERFILE: Dockerfile
+  rules:
+  - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    variables:
+      CTS_BUILD_TAG: latest
+  - if: $CI_COMMIT_TAG != null
+    variables:
+      CTS_BUILD_TAG: $CI_COMMIT_TAG
+  - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+    variables:
+      CTS_BUILD_TAG: $CI_COMMIT_REF_SLUG
