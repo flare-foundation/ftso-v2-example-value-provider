@@ -20,5 +20,6 @@ WORKDIR /app
 
 COPY --from=nodemodules /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
+COPY src/config src/config
 
 CMD ["node", "dist/main.js"]
