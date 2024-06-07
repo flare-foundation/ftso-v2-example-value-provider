@@ -13,7 +13,11 @@ export class FeedValueData {
   value: number;
 }
 
-export class FeedValuesResponse {
+export class RoundFeedValuesResponse {
   votingRoundId: number;
+  data: FeedValueData[];
+}
+
+export class FeedValuesResponse {
   data: FeedValueData[];
 }
