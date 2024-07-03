@@ -200,10 +200,10 @@ export class CcxtFeed implements BaseDataFeed {
     let configPath: string;
     switch (network) {
       case "local-test":
-        configPath = CONFIG_PREFIX + "local.json";
+        configPath = CONFIG_PREFIX + "test-feeds.json";
         break;
       default:
-        configPath = CONFIG_PREFIX + "coston.json";
+        configPath = CONFIG_PREFIX + "feeds.json";
     }
 
     try {

@@ -1689,9 +1689,9 @@ caniuse-lite@^1.0.30001587:
   integrity sha512-lFgnZ07UhaCcsSZgWW0K5j4e69dK1u/ltrL9lTUiFOwNHs12S3UMIEYgBV0Z6C6hRDev7iRnMzzYmKabYdXF9g==
 
 ccxt@^4.0.64:
-  version "4.3.6"
-  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-4.3.6.tgz#7f486e9a428f7d6478596f7ba4a9471a5cadfbbb"
-  integrity sha512-P60aeu6XmZ/SJJWJIBJ5t/rIvCC6m6pu7cA/iZw+sbH5V184fhVUknbG5do8c8+zZLdvOJnnIMX9UmaOB+jLVQ==
+  version "4.3.55"
+  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-4.3.55.tgz#3887ea5c8905cf3ddf31314ffaea9d001cf655a6"
+  integrity sha512-WsogzkssYfYECmveCLaQ3ktWmCXo6KZj/e1cMpsguB46kp2SD8g0yqZ4uWw1tCdsVt/aw8hbGtPzs22K6AV+eg==
   dependencies:
     ws "^8.8.1"
 
@@ -5244,9 +5244,9 @@ write-file-atomic@^4.0.2:
     signal-exit "^3.0.7"
 
 ws@^8.8.1:
-  version "8.16.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.16.0.tgz#d1cd774f36fbc07165066a60e40323eab6446fd4"
-  integrity sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==
+  version "8.17.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
+  integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
 xtend@^4.0.0:
   version "4.0.2"
