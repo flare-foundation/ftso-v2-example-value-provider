@@ -636,23 +636,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "TON/USD" },
-    "sources": [
-      {
-        "exchange": "gate",
-        "symbol": "TON/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "TON/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "TON/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "ICP/USD" },
     "sources": [
       {
@@ -715,27 +698,6 @@
       {
         "exchange": "okx",
         "symbol": "SHIB/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "DAI/USD" },
-    "sources": [
-      {
-        "exchange": "bitget",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "DAI/USDT"
       }
     ]
   },
@@ -835,19 +797,6 @@
       {
         "exchange": "okx",
         "symbol": "UNI/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "LEO/USD" },
-    "sources": [
-      {
-        "exchange": "gate",
-        "symbol": "LEO/USDT"
-      },
-      {
-        "exchange": "gateio",
-        "symbol": "LEO/USDT"
       }
     ]
   },
@@ -961,105 +910,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "LINK/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "LINK/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "LINK/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "LINK/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "LINK/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "LINK/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "LINK/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "LINK/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "ATOM/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "ATOM/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "ATOM/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ATOM/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ATOM/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "ATOM/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "ATOM/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "ATOM/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "DOT/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "DOT/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "DOT/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DOT/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DOT/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "DOT/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "DOT/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "DOT/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "TON/USD" },
     "sources": [
       {
@@ -1085,72 +935,6 @@
       {
         "exchange": "okx",
         "symbol": "TON/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "ICP/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "ICP/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "ICP/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ICP/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ICP/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "ICP/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "ICP/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "ICP/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "SHIB/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "SHIB/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "SHIB/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "SHIB/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "SHIB/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "SHIB/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "SHIB/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "SHIB/USDT"
       }
     ]
   },
@@ -1259,72 +1043,6 @@
       {
         "exchange": "okx",
         "symbol": "LEO/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "UNI/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "UNI/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "UNI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "UNI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "UNI/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "UNI/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "UNI/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "UNI/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "ETC/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ETC/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "ETC/USDT"
       }
     ]
   },
