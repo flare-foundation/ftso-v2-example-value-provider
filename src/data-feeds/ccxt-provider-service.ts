@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import ccxt, { Exchange, Ticker } from "ccxt";
+import ccxt, { Exchange } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
@@ -152,47 +152,11 @@ export class CcxtFeed implements BaseDataFeed {
 
     if (prices.length === 0) {
       this.logger.warn(`No prices found for ${JSON.stringify(feedId)}`);
-      return this.getFallbackPrice(usdtToUsdFeedId);
+      return undefined;
     }
 
     const result = prices.reduce((a, b) => a + b, 0) / prices.length;
     return result;
-  }
-
-  private async getFallbackPrice(feedId: FeedId): Promise<number> {
-    const config = this.config.find(config => feedsEqual(config.feed, feedId));
-    if (!config) {
-      this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
-      return undefined;
-    }
-
-    let usdtToUsd = undefined;
-
-    for (const source of config.sources) {
-      const exchange = this.exchangeByName.get(source.exchange);
-      if (exchange === undefined) continue;
-      const symbol = source.symbol;
-      let ticker: Ticker;
-      try {
-        ticker = await retry(async () => await exchange.fetchTicker(symbol), RETRY_BACKOFF_MS);
-        let price;
-        if (source.symbol.endsWith("USDT")) {
-          if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsd);
-          price = ticker.last * usdtToUsd;
-        } else {
-          price = ticker.last;
-        }
-        const priceForSymbol = this.prices.get(source.symbol) || new Map<string, PriceInfo>();
-        priceForSymbol.set(source.exchange, { price: price, time: 0, exchange: source.exchange });
-        this.prices.set(source.symbol, priceForSymbol);
-        return price;
-      } catch (e) {
-        this.logger.error(`Failed to fetch ticker for ${symbol} on ${source.exchange}: ${e}`);
-      }
-    }
-
-    this.logger.error(`No fallback price found for ${JSON.stringify(feedId)}`);
-    return undefined;
   }
 
   private loadConfig() {

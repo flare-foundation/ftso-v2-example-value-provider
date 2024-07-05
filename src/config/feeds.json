@@ -24,12 +24,28 @@
     "feed": { "category": 1, "name": "SGB/USD" },
     "sources": [
       {
+        "exchange": "bitstamp",
+        "symbol": "SGB/USD"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "SGB/USD"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "SGB/USDT"
+      },
+      {
         "exchange": "gate",
         "symbol": "SGB/USDT"
       },
       {
         "exchange": "gateio",
         "symbol": "SGB/USDT"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "SGB/USD"
       }
     ]
   },
