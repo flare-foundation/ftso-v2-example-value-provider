@@ -102,9 +102,13 @@ export class CcxtFeed implements BaseDataFeed {
       const exchange = this.exchangeByName.get(exchangeName);
       if (exchange === undefined) continue;
 
-      const symbolArray = Array.from(symbols);
-      const marketIds = symbolArray.map(symbol => exchange.markets[symbol].id);
-      void this.watch(exchange, marketIds, exchangeName);
+      try {
+        const symbolArray = Array.from(symbols);
+        const marketIds = symbolArray.map(symbol => exchange.markets[symbol].id);
+        void this.watch(exchange, marketIds, exchangeName);
+      } catch (e) {
+        this.logger.error(`Failed to watch trades for ${exchangeName}: ${e}`);
+      }
     }
   }
 
