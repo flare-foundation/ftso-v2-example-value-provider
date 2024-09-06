@@ -1059,6 +1059,10 @@
       {
         "exchange": "okx",
         "symbol": "LEO/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "LEO/USDT"
       }
     ]
   },
