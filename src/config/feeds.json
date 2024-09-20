@@ -1078,6 +1078,10 @@
     "feed": { "category": 1, "name": "LEO/USD" },
     "sources": [
       {
+        "exchange": "ascendex",
+        "symbol": "LEO/USDT"
+      },
+      {
         "exchange": "gate",
         "symbol": "LEO/USDT"
       },
@@ -1866,6 +1870,19 @@
       {
         "exchange": "hitbtc",
         "symbol": "RUNE/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "JOULE/USD" },
+    "sources": [
+      {
+        "exchange": "probit",
+        "symbol": "JOULE/USDT"
+      },
+      {
+        "exchange": "bitrue",
+        "symbol": "JOULE/USDT"
       }
     ]
   }

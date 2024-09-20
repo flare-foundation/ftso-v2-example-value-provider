@@ -1,9 +1,9 @@
 import { Logger } from "@nestjs/common";
-import ccxt, { Exchange } from "ccxt";
+import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
-import { retry } from "src/utils/retry";
+import { retry, sleepFor } from "src/utils/retry";
 
 type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
 
@@ -118,20 +118,46 @@ export class CcxtFeed implements BaseDataFeed {
   private async watch(exchange: Exchange, marketIds: string[], exchangeName: string) {
     this.logger.log(`Watching trades for ${marketIds} on exchange ${exchangeName}`);
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        const trades = await retry(async () => exchange.watchTradesForSymbols(marketIds, null, 100), RETRY_BACKOFF_MS);
-        trades.forEach(trade => {
-          const prices = this.prices.get(trade.symbol) || new Map<string, PriceInfo>();
-          prices.set(exchangeName, { price: trade.price, time: trade.timestamp, exchange: exchangeName });
-          this.prices.set(trade.symbol, prices);
-        });
-      } catch (e) {
-        this.logger.error(`Failed to watch trades for ${exchangeName}: ${e}`);
-        return;
+    if (exchange.has["watchTrades"]) {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          const trades = await retry(
+            async () => exchange.watchTradesForSymbols(marketIds, null, 100),
+            RETRY_BACKOFF_MS
+          );
+          this.processTrades(trades, exchangeName);
+        } catch (e) {
+          this.logger.error(`Failed to watch trades for ${exchangeName}: ${e}`);
+          return;
+        }
+      }
+    } else if (exchange.has["fetchTrades"]) {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          const trades: Trade[] = [];
+          for (const marketId of marketIds) {
+            const tradesForSymbol = await exchange.fetchTrades(marketId, null, 100);
+            trades.push(tradesForSymbol[tradesForSymbol.length - 1]);
+          }
+          this.processTrades(trades, exchangeName);
+
+          await sleepFor(1000);
+        } catch (e) {
+          this.logger.error(`Failed to fetch trades for ${exchangeName}: ${e}`);
+          await sleepFor(10_000);
+        }
       }
     }
+  }
+
+  private processTrades(trades: Trade[], exchangeName: string) {
+    trades.forEach(trade => {
+      const prices = this.prices.get(trade.symbol) || new Map<string, PriceInfo>();
+      prices.set(exchangeName, { price: trade.price, time: trade.timestamp, exchange: exchangeName });
+      this.prices.set(trade.symbol, prices);
+    });
   }
 
   private async getFeedPrice(feedId: FeedId): Promise<number> {
