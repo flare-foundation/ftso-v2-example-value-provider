@@ -14,7 +14,6 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle("Simple Feed Value Provider API interface")
     .setDescription("This server is used by the FTSO protocol data provider.")
-    .setBasePath(basePath)
     .setVersion("1.0")
     .build();
   const options: SwaggerDocumentOptions = {
