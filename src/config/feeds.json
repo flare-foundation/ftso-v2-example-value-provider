@@ -1280,5 +1280,593 @@
         "symbol": "PYTH/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "HNT/USD" },
+    "sources": [
+      {
+        "exchange": "binanceus",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "HNT/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "HNT/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "SUI/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "SUI/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "PEPE/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "PEPE/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "QNT/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bequant",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "coinbaseexchange",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "QNT/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "AAVE/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bequant",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "blockchaincom",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "AAVE/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "FTM/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bequant",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "FTM/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "ONDO/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "ONDO/USDT"
+      },
+      {
+        "exchange": "htx",
+        "symbol": "ONDO/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "TAO/USD" },
+    "sources": [
+      {
+        "exchange": "bingx",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "hitbtc",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "lbank",
+        "symbol": "TAO/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "TAO/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "FET/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "FET/USDT"
+      },
+      {
+        "exchange": "coinbaseexchange",
+        "symbol": "FET/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "RENDER/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "binanceus",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "RENDER/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "RENDER/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "NOT/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bitfinex",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bitmart",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "NOT/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "NOT/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "RUNE/USD" },
+    "sources": [
+      {
+        "exchange": "ascendex",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "bingx",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "bitcoincom",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "gateio",
+        "symbol": "RUNE/USDT"
+      },
+      {
+        "exchange": "hitbtc",
+        "symbol": "RUNE/USDT"
+      }
+    ]
   }
 ]
