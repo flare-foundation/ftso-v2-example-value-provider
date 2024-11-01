@@ -188,7 +188,16 @@ export class CcxtFeed implements BaseDataFeed {
       return undefined;
     }
 
-    const result = prices.reduce((a, b) => a + b, 0) / prices.length;
+    // Calculate median of prices
+    prices.sort((a, b) => a - b);
+    const middle = Math.floor(prices.length / 2);
+  
+    let result: number;
+    if (prices.length % 2 === 0) {
+      result = (prices[middle - 1] + prices[middle]) / 2;
+    } else {
+      result = prices[middle];
+    }    
     return result;
   }
 
