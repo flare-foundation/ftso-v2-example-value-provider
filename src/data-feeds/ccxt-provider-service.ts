@@ -169,8 +169,7 @@ export class CcxtFeed implements BaseDataFeed {
     }
 
     let usdtToUsd: number | undefined;
-    let totalWeightedPrice = 0;
-    let totalAmount = 0;
+    const priceAmountPairs: { price: number, amount: number }[] = [];
 
     for (const source of config.sources) {
         const info = this.prices.get(source.symbol)?.get(source.exchange);
@@ -178,7 +177,7 @@ export class CcxtFeed implements BaseDataFeed {
         if (!info || info.amount === undefined) continue; 
 
         let price = info.price;
-        
+
         // Adjust for USDT to USD if needed
         if (source.symbol.endsWith("USDT")) {
             if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
@@ -189,22 +188,27 @@ export class CcxtFeed implements BaseDataFeed {
             price *= usdtToUsd;
         }
 
-        totalWeightedPrice += price * info.amount; 
-        totalAmount += info.amount;
+        // Add the price and amount to our array for median calculation
+        priceAmountPairs.push({ price, amount: info.amount });
     }
 
-    // Ensure non-zero total amount to prevent division by zero
-    if (totalAmount === 0) {
-      this.logger.warn(`No prices with volume found for ${JSON.stringify(feedId)}`);
-      return undefined;
+    // Sort priceAmountPairs by price in ascending order
+    priceAmountPairs.sort((a, b) => a.price - b.price);
+
+    // Calculate the weighted median
+    const totalAmount = priceAmountPairs.reduce((sum, pair) => sum + pair.amount, 0);
+    let cumulativeAmount = 0;
+
+    for (const pair of priceAmountPairs) {
+        cumulativeAmount += pair.amount;
+        if (cumulativeAmount >= totalAmount / 2) {
+            return pair.price;
+        }
     }
 
-    if (totalAmount === 0) {
-        this.logger.warn(`No prices with volume found for ${JSON.stringify(feedId)}`);
-        return undefined;
-    }
-
-    return totalWeightedPrice / totalAmount;
+    // In case there are no valid price sources, return undefined
+    this.logger.warn(`Unable to calculate weighted median for ${JSON.stringify(feedId)}`);
+    return undefined;
   }
 
   private loadConfig() {
