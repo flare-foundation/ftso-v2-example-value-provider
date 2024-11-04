@@ -188,8 +188,10 @@ export class CcxtFeed implements BaseDataFeed {
       return undefined;
     }
 
-    const result = prices.reduce((a, b) => a + b, 0) / prices.length;
-    return result;
+    // Return median price
+    prices.sort((a, b) => a - b);
+    const mid = Math.floor(prices.length / 2);
+    return prices.length % 2 !== 0 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2;
   }
 
   private loadConfig() {
