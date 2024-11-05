@@ -30,6 +30,7 @@ interface PriceInfo {
   price: number;
   time: number;
   exchange: string;
+  amount: number;
 }
 
 const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
@@ -155,7 +156,7 @@ export class CcxtFeed implements BaseDataFeed {
   private processTrades(trades: Trade[], exchangeName: string) {
     trades.forEach(trade => {
       const prices = this.prices.get(trade.symbol) || new Map<string, PriceInfo>();
-      prices.set(exchangeName, { price: trade.price, time: trade.timestamp, exchange: exchangeName });
+      prices.set(exchangeName, { price: trade.price, time: trade.timestamp, exchange: exchangeName, amount: trade.amount });
       this.prices.set(trade.symbol, prices);
     });
   }
@@ -167,31 +168,47 @@ export class CcxtFeed implements BaseDataFeed {
       return undefined;
     }
 
-    const prices: number[] = [];
-
-    let usdtToUsd = undefined;
+    let usdtToUsd: number | undefined;
+    const priceAmountPairs: { price: number, amount: number }[] = [];
 
     for (const source of config.sources) {
-      const info = this.prices.get(source.symbol)?.get(source.exchange);
-      if (info === undefined) continue;
+        const info = this.prices.get(source.symbol)?.get(source.exchange);
+        // Skip if no price or amount information is available
+        if (!info || info.amount === undefined) continue; 
 
-      if (source.symbol.endsWith("USDT")) {
-        if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
-        prices.push(info.price * usdtToUsd);
-      } else {
-        prices.push(info.price);
-      }
+        let price = info.price;
+
+        // Adjust for USDT to USD if needed
+        if (source.symbol.endsWith("USDT")) {
+            if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
+            if (usdtToUsd === undefined) {
+              this.logger.warn(`Unable to retrieve USDT to USD conversion rate for ${source.symbol} at ${source.exchange}`);
+              continue; // Skip this source if conversion rate is unavailable
+            }
+            price *= usdtToUsd;
+        }
+
+        // Add the price and amount to our array for median calculation
+        priceAmountPairs.push({ price, amount: info.amount });
     }
 
-    if (prices.length === 0) {
-      this.logger.warn(`No prices found for ${JSON.stringify(feedId)}`);
-      return undefined;
+    // Sort priceAmountPairs by price in ascending order
+    priceAmountPairs.sort((a, b) => a.price - b.price);
+
+    // Calculate the weighted median
+    const totalAmount = priceAmountPairs.reduce((sum, pair) => sum + pair.amount, 0);
+    let cumulativeAmount = 0;
+
+    for (const pair of priceAmountPairs) {
+        cumulativeAmount += pair.amount;
+        if (cumulativeAmount >= totalAmount / 2) {
+            return pair.price;
+        }
     }
 
-    // Return median price
-    prices.sort((a, b) => a - b);
-    const mid = Math.floor(prices.length / 2);
-    return prices.length % 2 !== 0 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2;
+    // In case there are no valid price sources, return undefined
+    this.logger.warn(`Unable to calculate weighted median for ${JSON.stringify(feedId)}`);
+    return undefined;
   }
 
   private loadConfig() {
