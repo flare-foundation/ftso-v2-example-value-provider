@@ -1,21 +1,39 @@
-# Example FTSOv2 feed value provider
+# FTSOv2 Example Feed Value Provider
 
-Sample provider implementation that serves values for requested feed ids. By default, it provides latest values for supported feeds from exchanges using CCXT.
+This is a sample implementation of an FTSOv2 feed value provider that serves values for requested feed IDs. By default, it uses [CCXT](https://ccxt.readthedocs.io/) to fetch the latest values from supported exchanges. Alternatively, it can be configured to provide fixed or random values for testing purposes.
 
-However, for testing it can be configured to return a fixed or random values by setting `VALUE_PROVIDER_IMPL` env variable to either `fixed` or `random` (left blank will default to CCXT).
+## Configuration
 
-Starting provider:
-```
+The provider behavior can be adjusted via the `VALUE_PROVIDER_IMPL` environment variable:
+- `fixed`: returns a fixed value.
+- `random`: returns random values.
+- Leave blank to use the default CCXT-based values.
+
+## Starting the Provider
+
+To start the provider using Docker, run:
+
+```bash
 docker run --rm -it --publish "0.0.0.0:3101:3101" ghcr.io/flare-foundation/ftso-v2-example-value-provider
 ```
 
-## Obtaining feed values
+This will start the service on port `3101`.
 
-There are two API endpoints: `/feed-values/<votingRound>` and `/feed-values/`, to be used by FTSO Scaling data provider and Fast Updates client respectively. In this (basic) example implementation, however, both endpoints map to the same service logic and return the latest feed values.
+## Obtaining Feed Values
 
-## Sample usage
+The provider exposes two API endpoints for retrieving feed values:
 
-Feed values for voting round id:
+1. **`/feed-values/<votingRound>`**: Retrieves feed values for a specified voting round. Used by FTSOv2 Scaling clients.
+2. **`/feed-values/`**: Retrieves the latest feed values without a specific voting round ID. Used by FTSOv2 Fast Updates clients.
+
+> **Note**: In this example implementation, both endpoints return the same data, which is the latest feed values available.
+
+### Example Usage
+
+#### Fetching Feed Values with a Voting Round ID
+
+Use the endpoint `/feed-values/<votingRound>` to obtain values for a specific voting round.
+
 ```bash
 curl -X 'POST' \
   'http://localhost:3101/feed-values/0' \
@@ -28,7 +46,8 @@ curl -X 'POST' \
 }'
 ```
 
-Response:
+**Example Response:**
+
 ```json
 {
   "votingRoundId": 0,
@@ -36,13 +55,15 @@ Response:
     { "feed": { "category": 1, "name": "BTC/USD" }, "value": 71287.34508311428 }
   ]
 }
-
 ```
----
-Current values:
+
+#### Fetching Latest Feed Values (Without Voting Round ID)
+
+Use the endpoint `/feed-values/` to get the most recent feed values without specifying a voting round.
+
 ```bash
 curl -X 'POST' \
-  'http://localhost:3101/feed-values/' \ 
+  'http://localhost:3101/feed-values/' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -52,12 +73,12 @@ curl -X 'POST' \
 }'
 ```
 
-Response:
+**Example Response:**
+
 ```json
 {
   "data": [
     { "feed": { "category": 1, "name": "BTC/USD" }, "value": 71285.74004472858 }
   ]
 }
-
 ```
