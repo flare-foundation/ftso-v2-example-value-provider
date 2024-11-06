@@ -156,7 +156,12 @@ export class CcxtFeed implements BaseDataFeed {
   private processTrades(trades: Trade[], exchangeName: string) {
     trades.forEach(trade => {
       const prices = this.prices.get(trade.symbol) || new Map<string, PriceInfo>();
-      prices.set(exchangeName, { price: trade.price, time: trade.timestamp, exchange: exchangeName, amount: trade.amount });
+      prices.set(exchangeName, {
+        price: trade.price,
+        time: trade.timestamp,
+        exchange: exchangeName,
+        amount: trade.amount,
+      });
       this.prices.set(trade.symbol, prices);
     });
   }
@@ -169,27 +174,27 @@ export class CcxtFeed implements BaseDataFeed {
     }
 
     let usdtToUsd: number | undefined;
-    const priceAmountPairs: { price: number, amount: number }[] = [];
+    const priceAmountPairs: { price: number; amount: number }[] = [];
 
     for (const source of config.sources) {
-        const info = this.prices.get(source.symbol)?.get(source.exchange);
-        // Skip if no price or amount information is available
-        if (!info || info.amount === undefined) continue; 
+      const info = this.prices.get(source.symbol)?.get(source.exchange);
+      // Skip if no price or amount information is available
+      if (!info || info.amount === undefined) continue;
 
-        let price = info.price;
+      let price = info.price;
 
-        // Adjust for USDT to USD if needed
-        if (source.symbol.endsWith("USDT")) {
-            if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
-            if (usdtToUsd === undefined) {
-              this.logger.warn(`Unable to retrieve USDT to USD conversion rate for ${source.symbol} at ${source.exchange}`);
-              continue; // Skip this source if conversion rate is unavailable
-            }
-            price *= usdtToUsd;
+      // Adjust for USDT to USD if needed
+      if (source.symbol.endsWith("USDT")) {
+        if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
+        if (usdtToUsd === undefined) {
+          this.logger.warn(`Unable to retrieve USDT to USD conversion rate for ${source.symbol} at ${source.exchange}`);
+          continue; // Skip this source if conversion rate is unavailable
         }
+        price *= usdtToUsd;
+      }
 
-        // Add the price and amount to our array for median calculation
-        priceAmountPairs.push({ price, amount: info.amount });
+      // Add the price and amount to our array for median calculation
+      priceAmountPairs.push({ price, amount: info.amount });
     }
 
     // Sort priceAmountPairs by price in ascending order
@@ -200,10 +205,10 @@ export class CcxtFeed implements BaseDataFeed {
     let cumulativeAmount = 0;
 
     for (const pair of priceAmountPairs) {
-        cumulativeAmount += pair.amount;
-        if (cumulativeAmount >= totalAmount / 2) {
-            return pair.price;
-        }
+      cumulativeAmount += pair.amount;
+      if (cumulativeAmount >= totalAmount / 2) {
+        return pair.price;
+      }
     }
 
     // In case there are no valid price sources, return undefined
