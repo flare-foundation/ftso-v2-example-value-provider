@@ -166,7 +166,7 @@ export class CcxtFeed implements BaseDataFeed {
     });
   }
 
-  private async getFeedPrice(feedId: FeedId): Promise<number> {
+  private async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
     const config = this.config.find(config => feedsEqual(config.feed, feedId));
     if (!config) {
       this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
@@ -174,11 +174,12 @@ export class CcxtFeed implements BaseDataFeed {
     }
 
     let usdtToUsd: number | undefined;
-    const priceAmountPairs: { price: number; amount: number }[] = [];
+    const prices: number[] = [];
 
+    // Gather all available prices
     for (const source of config.sources) {
       const info = this.prices.get(source.symbol)?.get(source.exchange);
-      // Skip if no price or amount information is available
+      // Skip if no price information is available
       if (!info || info.amount === undefined) continue;
 
       let price = info.price;
@@ -193,27 +194,27 @@ export class CcxtFeed implements BaseDataFeed {
         price *= usdtToUsd;
       }
 
-      // Add the price and amount to our array for median calculation
-      priceAmountPairs.push({ price, amount: info.amount });
+      // Add the price to our list for median calculation
+      prices.push(price);
     }
 
-    // Sort priceAmountPairs by price in ascending order
-    priceAmountPairs.sort((a, b) => a.price - b.price);
-
-    // Calculate the weighted median
-    const totalAmount = priceAmountPairs.reduce((sum, pair) => sum + pair.amount, 0);
-    let cumulativeAmount = 0;
-
-    for (const pair of priceAmountPairs) {
-      cumulativeAmount += pair.amount;
-      if (cumulativeAmount >= totalAmount / 2) {
-        return pair.price;
-      }
+    // If no valid prices were found, return undefined
+    if (prices.length === 0) {
+      this.logger.warn(`Unable to calculate median for ${JSON.stringify(feedId)}`);
+      return undefined;
     }
 
-    // In case there are no valid price sources, return undefined
-    this.logger.warn(`Unable to calculate weighted median for ${JSON.stringify(feedId)}`);
-    return undefined;
+    // Sort the prices in ascending order
+    prices.sort((a, b) => a - b);
+
+    // Calculate the median
+    const mid = Math.floor(prices.length / 2);
+    const median =
+      prices.length % 2 !== 0
+        ? prices[mid] // Odd number of elements, take the middle one
+        : (prices[mid - 1] + prices[mid]) / 2; // Even number of elements, average the two middle ones
+
+    return median;
   }
 
   private loadConfig() {
