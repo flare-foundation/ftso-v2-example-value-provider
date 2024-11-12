@@ -456,7 +456,7 @@
         "symbol": "POL/USDT"
       },
       {
-        "exchange": "bitfinex",
+        "exchange": "bitfinex2",
         "symbol": "POL/USDT"
       },
       {
@@ -1066,7 +1066,7 @@
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex",
+        "exchange": "bitfinex2",
         "symbol": "LEO/USDT"
       }
     ]
