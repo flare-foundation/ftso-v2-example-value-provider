@@ -548,6 +548,14 @@
     "feed": { "category": 1, "name": "XDC/USD" },
     "sources": [
       {
+        "exchange": "bybit",
+        "symbol": "XDC/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "XDC/USDT"
+      },
+      {
         "exchange": "bitget",
         "symbol": "XDC/USDT"
       },
@@ -566,6 +574,14 @@
     "sources": [
       {
         "exchange": "binance",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "TRX/USDT"
+      },
+      {
+        "exchange": "htx",
         "symbol": "TRX/USDT"
       },
       {
@@ -829,12 +845,8 @@
         "symbol": "ETC/USDT"
       },
       {
-        "exchange": "cryptocom",
+        "exchange": "htx",
         "symbol": "ETC/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ETC/USD"
       },
       {
         "exchange": "gate",
@@ -963,6 +975,10 @@
         "symbol": "DAI/USDT"
       },
       {
+        "exchange": "bybit",
+        "symbol": "DAI/USDT"
+      },
+      {
         "exchange": "bitget",
         "symbol": "DAI/USDT"
       },
@@ -1054,10 +1070,6 @@
     "feed": { "category": 1, "name": "LEO/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
-        "symbol": "LEO/USDT"
-      },
-      {
         "exchange": "gate",
         "symbol": "LEO/USDT"
       },
@@ -1068,6 +1080,10 @@
       {
         "exchange": "bitfinex2",
         "symbol": "LEO/USDT"
+      },
+      {
+        "exchange": "bitfinex2",
+        "symbol": "LEO/USD"
       }
     ]
   },
@@ -1372,23 +1388,11 @@
     "feed": { "category": 1, "name": "QNT/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
-        "symbol": "QNT/USDT"
-      },
-      {
-        "exchange": "binanceus",
+        "exchange": "binance",
         "symbol": "QNT/USDT"
       },
       {
         "exchange": "bingx",
-        "symbol": "QNT/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "QNT/USDT"
-      },
-      {
-        "exchange": "bitmart",
         "symbol": "QNT/USDT"
       },
       {
@@ -1397,6 +1401,10 @@
       },
       {
         "exchange": "coinbase",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "kucoin",
         "symbol": "QNT/USDT"
       }
     ]
