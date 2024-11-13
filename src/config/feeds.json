@@ -63,6 +63,10 @@
       {
         "exchange": "okx",
         "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "binance",
+        "symbol": "XRP/USDT"
       }
     ]
   },
@@ -129,6 +133,14 @@
       {
         "exchange": "okx",
         "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "XLM/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "XLM/USD"
       }
     ]
   },
@@ -466,6 +478,18 @@
       {
         "exchange": "bybit",
         "symbol": "POL/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "POL/USDT"
+      },
+      {
+        "exchange": "binance",
+        "symbol": "POL/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "POL/USD"
       }
     ]
   },
@@ -565,6 +589,10 @@
       },
       {
         "exchange": "kucoin",
+        "symbol": "XDC/USDT"
+      },
+      {
+        "exchange": "htx",
         "symbol": "XDC/USDT"
       }
     ]
@@ -859,6 +887,14 @@
       {
         "exchange": "okx",
         "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "ETC/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "ETC/USD"
       }
     ]
   },
@@ -1401,10 +1437,14 @@
       },
       {
         "exchange": "coinbase",
-        "symbol": "QNT/USDT"
+        "symbol": "QNT/USD"
       },
       {
         "exchange": "kucoin",
+        "symbol": "QNT/USDT"
+      },
+      {
+        "exchange": "gate",
         "symbol": "QNT/USDT"
       }
     ]
