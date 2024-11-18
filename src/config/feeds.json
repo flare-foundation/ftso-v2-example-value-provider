@@ -565,6 +565,10 @@
       {
         "exchange": "cryptocom",
         "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "USDT/USD"
       }
     ]
   },
