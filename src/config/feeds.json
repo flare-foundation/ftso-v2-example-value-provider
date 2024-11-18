@@ -1729,5 +1729,14 @@
         "symbol": "JOULE/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "USDX/USD" },
+    "sources": [
+      {
+        "exchange": "bitmart",
+        "symbol": "USDX/USDT"
+      }
+    ]
   }
 ]
