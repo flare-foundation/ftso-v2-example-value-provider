@@ -200,8 +200,12 @@ export class CcxtFeed implements BaseDataFeed {
 
     // If no valid prices were found, return undefined
     if (prices.length === 0) {
-      this.logger.warn(`Unable to calculate median for ${JSON.stringify(feedId)}`);
+      this.logger.warn(`No prices found for ${JSON.stringify(feedId)}`);
       return undefined;
+    }
+    // If single price found, return price
+    if (prices.length === 1) {
+      return prices[0];
     }
 
     // Sort the prices in ascending order
