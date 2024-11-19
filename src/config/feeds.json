@@ -17,6 +17,22 @@
       {
         "exchange": "okx",
         "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "FLR/USD"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "FLR/USD"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "htx",
+        "symbol": "FLR/USDT"
       }
     ]
   },
@@ -34,6 +50,10 @@
       {
         "exchange": "kraken",
         "symbol": "SGB/USD"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "SGB/USDT"
       }
     ]
   },
@@ -67,6 +87,18 @@
       {
         "exchange": "binance",
         "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "XRP/USD"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "XRP/USDT"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "XRP/USD"
       }
     ]
   },
@@ -209,6 +241,10 @@
       {
         "exchange": "okx",
         "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "ADA/USD"
       }
     ]
   },
@@ -862,6 +898,14 @@
       {
         "exchange": "okx",
         "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "htx",
+        "symbol": "UNI/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "UNI/USD"
       }
     ]
   },
@@ -1362,7 +1406,11 @@
     "feed": { "category": 1, "name": "SUI/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
+        "exchange": "coinbase",
+        "symbol": "SUI/USD"
+      },
+      {
+        "exchange": "okx",
         "symbol": "SUI/USDT"
       },
       {
@@ -1371,10 +1419,6 @@
       },
       {
         "exchange": "bingx",
-        "symbol": "SUI/USDT"
-      },
-      {
-        "exchange": "bitfinex2",
         "symbol": "SUI/USDT"
       },
       {
@@ -1387,6 +1431,14 @@
       },
       {
         "exchange": "bybit",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "SUI/USDT"
+      },
+      {
+        "exchange": "mexc",
         "symbol": "SUI/USDT"
       }
     ]
@@ -1403,10 +1455,6 @@
         "symbol": "PEPE/USDT"
       },
       {
-        "exchange": "bitfinex2",
-        "symbol": "PEPE/USDT"
-      },
-      {
         "exchange": "bitget",
         "symbol": "PEPE/USDT"
       },
@@ -1420,6 +1468,22 @@
       },
       {
         "exchange": "cryptocom",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "PEPE/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "PEPE/USDT"
+      },
+      {
+        "exchange": "htx",
         "symbol": "PEPE/USDT"
       }
     ]
@@ -1457,10 +1521,6 @@
     "feed": { "category": 1, "name": "AAVE/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
-        "symbol": "AAVE/USDT"
-      },
-      {
         "exchange": "binanceus",
         "symbol": "AAVE/USDT"
       },
@@ -1469,20 +1529,28 @@
         "symbol": "AAVE/USDT"
       },
       {
-        "exchange": "bitfinex2",
-        "symbol": "AAVE/USDT"
-      },
-      {
         "exchange": "bitget",
-        "symbol": "AAVE/USDT"
-      },
-      {
-        "exchange": "bitmart",
         "symbol": "AAVE/USDT"
       },
       {
         "exchange": "bybit",
         "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "htx",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "AAVE/USD"
       }
     ]
   },
@@ -1490,19 +1558,11 @@
     "feed": { "category": 1, "name": "FTM/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
-        "symbol": "FTM/USDT"
-      },
-      {
         "exchange": "binanceus",
         "symbol": "FTM/USDT"
       },
       {
         "exchange": "bingx",
-        "symbol": "FTM/USDT"
-      },
-      {
-        "exchange": "bitfinex2",
         "symbol": "FTM/USDT"
       },
       {
@@ -1515,6 +1575,18 @@
       },
       {
         "exchange": "bybit",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "FTM/USDT"
+      },
+      {
+        "exchange": "gate",
         "symbol": "FTM/USDT"
       }
     ]
