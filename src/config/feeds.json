@@ -439,14 +439,6 @@
         "symbol": "MATIC/USDT"
       },
       {
-        "exchange": "cryptocom",
-        "symbol": "MATIC/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "MATIC/USD"
-      },
-      {
         "exchange": "gate",
         "symbol": "MATIC/USDT"
       },
