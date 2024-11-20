@@ -437,18 +437,6 @@
       {
         "exchange": "binance",
         "symbol": "MATIC/USDT"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "MATIC/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "MATIC/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "MATIC/USDT"
       }
     ]
   },
