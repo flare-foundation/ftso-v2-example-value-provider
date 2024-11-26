@@ -132,7 +132,7 @@ export class CcxtFeed implements BaseDataFeed {
             continue;
           }
 
-          this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
+          this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp ?? 0);
         }
       } else {
         throw new Error("Exchange does not support fetchTickers");
@@ -152,7 +152,7 @@ export class CcxtFeed implements BaseDataFeed {
           continue;
         }
 
-        this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
+        this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp ?? 0);
       }
     }
   }
@@ -196,7 +196,7 @@ export class CcxtFeed implements BaseDataFeed {
 
   private processTrades(trades: Trade[], exchangeName: string) {
     trades.forEach(trade => {
-      this.setPrice(exchangeName, trade.symbol, trade.price, trade.timestamp);
+      this.setPrice(exchangeName, trade.symbol, trade.price, trade.timestamp ?? Date.now());
     });
   }
 
@@ -253,6 +253,7 @@ export class CcxtFeed implements BaseDataFeed {
       return undefined;
     }
 
+    this.logger.debug(`Calculating results for ${JSON.stringify(feedId)}`);
     if (lambda === undefined) {
       return this.median(prices);
     } else {
@@ -303,16 +304,24 @@ export class CcxtFeed implements BaseDataFeed {
     const weightedPrices = prices.map((data, i) => ({
       price: data.value,
       weight: normalizedWeights[i],
+      exchange: data.exchange,
+      staleness: now - data.time,
     }));
 
     // Sort prices by value for median calculation
     weightedPrices.sort((a, b) => a.price - b.price);
+
+    this.logger.debug("Weighted prices:");
+    for (const { price, weight, exchange, staleness: we } of weightedPrices) {
+      this.logger.debug(`Price: ${price}, weight: ${weight}, staleness ms: ${we}, exchange: ${exchange}`);
+    }
 
     // Find the weighted median
     let cumulativeWeight = 0;
     for (let i = 0; i < weightedPrices.length; i++) {
       cumulativeWeight += weightedPrices[i].weight;
       if (cumulativeWeight >= 0.5) {
+        this.logger.debug(`Weighted median: ${weightedPrices[i].price}`);
         return weightedPrices[i].price;
       }
     }
