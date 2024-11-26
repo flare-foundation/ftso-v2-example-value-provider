@@ -33,7 +33,8 @@ interface PriceInfo {
 }
 
 const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
-const lambda = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : undefined;
+// Parameter for exponential decay in time-weighted median price calculation
+const lambda = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : 0.00005;
 
 export class CcxtFeed implements BaseDataFeed {
   private readonly logger = new Logger(CcxtFeed.name);
@@ -132,7 +133,7 @@ export class CcxtFeed implements BaseDataFeed {
             continue;
           }
 
-          this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp ?? 0);
+          this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
         }
       } else {
         throw new Error("Exchange does not support fetchTickers");
@@ -152,7 +153,7 @@ export class CcxtFeed implements BaseDataFeed {
           continue;
         }
 
-        this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp ?? 0);
+        this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
       }
     }
   }
@@ -196,7 +197,7 @@ export class CcxtFeed implements BaseDataFeed {
 
   private processTrades(trades: Trade[], exchangeName: string) {
     trades.forEach(trade => {
-      this.setPrice(exchangeName, trade.symbol, trade.price, trade.timestamp ?? Date.now());
+      this.setPrice(exchangeName, trade.symbol, trade.price, trade.timestamp);
     });
   }
 
@@ -204,7 +205,7 @@ export class CcxtFeed implements BaseDataFeed {
     const prices = this.prices.get(symbol) || new Map<string, PriceInfo>();
     prices.set(exchangeName, {
       value: price,
-      time: timestamp,
+      time: timestamp ?? Date.now(),
       exchange: exchangeName,
     });
     this.prices.set(symbol, prices);
@@ -254,30 +255,7 @@ export class CcxtFeed implements BaseDataFeed {
     }
 
     this.logger.debug(`Calculating results for ${JSON.stringify(feedId)}`);
-    if (lambda === undefined) {
-      return this.median(prices);
-    } else {
-      return this.weightedMedian(prices);
-    }
-  }
-
-  private median(prices: PriceInfo[]): number {
-    // If single price found, return price
-    if (prices.length === 1) {
-      return prices[0].value;
-    }
-
-    // Sort the prices in ascending order
-    prices.sort((a, b) => a.value - b.value);
-
-    // Calculate the median
-    const mid = Math.floor(prices.length / 2);
-    const median =
-      prices.length % 2 !== 0
-        ? prices[mid].value // Odd number of elements, take the middle one
-        : (prices[mid - 1].value + prices[mid].value) / 2; // Even number of elements, average the two middle ones
-
-    return median;
+    return this.weightedMedian(prices);
   }
 
   private weightedMedian(prices: PriceInfo[]): number {
