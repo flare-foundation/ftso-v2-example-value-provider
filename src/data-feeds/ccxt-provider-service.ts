@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import ccxt, { Exchange, Trade } from "ccxt";
+import ccxt, { Exchange, pro, Trade } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
@@ -27,12 +27,14 @@ interface FeedConfig {
 }
 
 interface PriceInfo {
-  price: number;
+  value: number;
   time: number;
   exchange: string;
 }
 
 const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
+// Parameter for exponential decay in time-weighted median price calculation
+const lambda = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : 0.00005;
 
 export class CcxtFeed implements BaseDataFeed {
   private readonly logger = new Logger(CcxtFeed.name);
@@ -202,8 +204,8 @@ export class CcxtFeed implements BaseDataFeed {
   private setPrice(exchangeName: string, symbol: string, price: number, timestamp: number) {
     const prices = this.prices.get(symbol) || new Map<string, PriceInfo>();
     prices.set(exchangeName, {
-      price: price,
-      time: timestamp,
+      value: price,
+      time: timestamp ?? Date.now(),
       exchange: exchangeName,
     });
     this.prices.set(symbol, prices);
@@ -227,7 +229,7 @@ export class CcxtFeed implements BaseDataFeed {
       return price * usdtToUsd;
     };
 
-    const prices: number[] = [];
+    const prices: PriceInfo[] = [];
 
     // Gather all available prices
     for (const source of config.sources) {
@@ -235,13 +237,16 @@ export class CcxtFeed implements BaseDataFeed {
       // Skip if no price information is available
       if (!info) continue;
 
-      let price = info.price;
+      let price = info.value;
 
       price = source.symbol.endsWith("USDT") ? await convertToUsd(source.symbol, source.exchange, price) : price;
       if (price === undefined) continue;
 
       // Add the price to our list for median calculation
-      prices.push(price);
+      prices.push({
+        ...info,
+        value: price,
+      });
     }
 
     if (prices.length === 0) {
@@ -249,22 +254,58 @@ export class CcxtFeed implements BaseDataFeed {
       return undefined;
     }
 
-    // If single price found, return price
-    if (prices.length === 1) {
-      return prices[0];
+    this.logger.debug(`Calculating results for ${JSON.stringify(feedId)}`);
+    return this.weightedMedian(prices);
+  }
+
+  private weightedMedian(prices: PriceInfo[]): number {
+    if (prices.length === 0) {
+      throw new Error("Price list cannot be empty.");
     }
 
-    // Sort the prices in ascending order
-    prices.sort((a, b) => a - b);
+    prices.sort((a, b) => a.time - b.time);
 
-    // Calculate the median
-    const mid = Math.floor(prices.length / 2);
-    const median =
-      prices.length % 2 !== 0
-        ? prices[mid] // Odd number of elements, take the middle one
-        : (prices[mid - 1] + prices[mid]) / 2; // Even number of elements, average the two middle ones
+    // Current time for weight calculation
+    const now = Date.now();
 
-    return median;
+    // Calculate exponential weights
+    const weights = prices.map(data => {
+      const timeDifference = now - data.time;
+      return Math.exp(-lambda * timeDifference); // Exponential decay
+    });
+
+    // Normalize weights to sum to 1
+    const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+    const normalizedWeights = weights.map(weight => weight / weightSum);
+
+    // Combine prices and weights
+    const weightedPrices = prices.map((data, i) => ({
+      price: data.value,
+      weight: normalizedWeights[i],
+      exchange: data.exchange,
+      staleness: now - data.time,
+    }));
+
+    // Sort prices by value for median calculation
+    weightedPrices.sort((a, b) => a.price - b.price);
+
+    this.logger.debug("Weighted prices:");
+    for (const { price, weight, exchange, staleness: we } of weightedPrices) {
+      this.logger.debug(`Price: ${price}, weight: ${weight}, staleness ms: ${we}, exchange: ${exchange}`);
+    }
+
+    // Find the weighted median
+    let cumulativeWeight = 0;
+    for (let i = 0; i < weightedPrices.length; i++) {
+      cumulativeWeight += weightedPrices[i].weight;
+      if (cumulativeWeight >= 0.5) {
+        this.logger.debug(`Weighted median: ${weightedPrices[i].price}`);
+        return weightedPrices[i].price;
+      }
+    }
+
+    this.logger.warn("Unable to calculate weighted median");
+    return undefined;
   }
 
   private loadConfig() {
