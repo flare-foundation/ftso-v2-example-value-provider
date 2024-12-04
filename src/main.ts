@@ -5,9 +5,15 @@ import { NestFactory } from "@nestjs/core";
 import { RandomExampleProviderModule } from "./app.module";
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
+import { LogLevel } from "@nestjs/common";
 
 async function bootstrap() {
-  const app = await NestFactory.create(RandomExampleProviderModule);
+  let logLevels: LogLevel[] = ["log"];
+  if (process.env.LOG_LEVEL == "debug") {
+    logLevels = ["verbose"];
+  }
+
+  const app = await NestFactory.create(RandomExampleProviderModule, { logger: logLevels });
   app.use(helmet());
   const basePath = process.env.VALUE_PROVIDER_CLIENT_BASE_PATH ?? "";
 
