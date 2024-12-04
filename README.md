@@ -17,7 +17,7 @@ To start the provider using Docker, run:
 docker run --rm -it --publish "0.0.0.0:3101:3101" ghcr.io/flare-foundation/ftso-v2-example-value-provider
 ```
 
-This will start the service on port `3101`.
+This will start the service on port `3101`. You can find the API spec at: http://localhost:3101/api-doc.
 
 ## Obtaining Feed Values
 
