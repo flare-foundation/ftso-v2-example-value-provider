@@ -1707,6 +1707,10 @@
       {
         "exchange": "bitrue",
         "symbol": "JOULE/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "JOULE/USDT"
       }
     ]
   },
