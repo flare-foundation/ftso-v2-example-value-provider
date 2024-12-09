@@ -12,6 +12,9 @@ async function bootstrap() {
   if (process.env.LOG_LEVEL == "debug") {
     logLevels = ["verbose"];
   }
+  if (process.env.LOG_LEVEL == "warn") {
+    logLevels = ["warn"];
+  }
 
   const app = await NestFactory.create(RandomExampleProviderModule, { logger: logLevels });
   app.use(helmet());
