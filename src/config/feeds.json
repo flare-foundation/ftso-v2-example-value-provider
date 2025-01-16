@@ -1722,5 +1722,105 @@
         "symbol": "USDX/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "HBAR/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "HBAR/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "HBAR/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "HBAR/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "HBAR/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "HBAR/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "HBAR/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "PENGU/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "PENGU/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "PENGU/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "PENGU/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "PENGU/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "PENGU/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "HYPE/USD" },
+    "sources": [
+      {
+        "exchange": "kucoin",
+        "symbol": "HYPE/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "HYPE/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "HYPE/USDT"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "APT/USD" },
+    "sources": [
+      {
+        "exchange": "bybit",
+        "symbol": "APT/USDT"
+      },
+      {
+        "exchange": "binance",
+        "symbol": "APT/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "APT/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "APT/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "APT/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "APT/USDT"
+      }
+    ]
   }
 ]
