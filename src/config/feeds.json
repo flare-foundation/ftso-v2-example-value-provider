@@ -1822,5 +1822,26 @@
         "symbol": "APT/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "S/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "S/USDT"
+      }
+    ]
   }
 ]
