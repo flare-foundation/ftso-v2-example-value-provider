@@ -1773,6 +1773,10 @@
         "symbol": "HYPE/USDT"
       },
       {
+        "exchange": "bingx",
+        "symbol": "HYPE/USDT"
+      },
+      {
         "exchange": "gate",
         "symbol": "HYPE/USDT"
       }
