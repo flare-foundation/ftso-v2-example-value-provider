@@ -1466,32 +1466,16 @@
     "feed": { "category": 1, "name": "FTM/USD" },
     "sources": [
       {
-        "exchange": "ascendex",
-        "symbol": "FTM/USDT"
-      },
-      {
-        "exchange": "binanceus",
-        "symbol": "FTM/USDT"
-      },
-      {
-        "exchange": "bingx",
-        "symbol": "FTM/USDT"
+        "exchange": "kraken",
+        "symbol": "FTM/USD"
       },
       {
         "exchange": "bitfinex2",
-        "symbol": "FTM/USDT"
+        "symbol": "FTM/USD"
       },
       {
-        "exchange": "bitget",
-        "symbol": "FTM/USDT"
-      },
-      {
-        "exchange": "bitmart",
-        "symbol": "FTM/USDT"
-      },
-      {
-        "exchange": "bybit",
-        "symbol": "FTM/USDT"
+        "exchange": "bitso",
+        "symbol": "FTM/USD"
       }
     ]
   },
