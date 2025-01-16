@@ -1831,5 +1831,26 @@
         "symbol": "S/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "PAXG/USD" },
+    "sources": [
+      {
+        "exchange": "kucoin",
+        "symbol": "PAXG/USDT"
+      },
+      {
+        "exchange": "xt",
+        "symbol": "PAXG/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "PAXG/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "PAXG/USDT"
+      }
+    ]
   }
 ]
