@@ -1852,5 +1852,30 @@
         "symbol": "PAXG/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "TRUMP/USD" },
+    "sources": [
+      {
+        "exchange": "bybit",
+        "symbol": "TRUMP/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "TRUMP/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "TRUMP/USDT"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "TRUMP/USD"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "TRUMP/USDT"
+      }
+    ]
   }
 ]
