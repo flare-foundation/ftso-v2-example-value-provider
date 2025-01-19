@@ -1875,6 +1875,14 @@
       {
         "exchange": "bitget",
         "symbol": "TRUMP/USDT"
+      },
+      {
+        "exchange": "binance",
+        "symbol": "TRUMP/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "TRUMP/USDT"
       }
     ]
   }
