@@ -233,6 +233,7 @@ export class CcxtFeed implements BaseDataFeed {
 
     for (const source of config.sources) {
       const exchange: Exchange = this.exchangeByName.get(source.exchange);
+      if (exchange == undefined) continue;
       const market = exchange.markets[source.symbol];
       if (market == undefined) continue;
       this.logger.log(`Fetching last price for ${market.id} on ${source.exchange}`);
@@ -268,6 +269,12 @@ export class CcxtFeed implements BaseDataFeed {
 
     // Normalize weights to sum to 1
     const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+
+    if (weightSum === 0) {
+      // All prices extremely stale, return any
+      return prices[0].value;
+    }
+
     const normalizedWeights = weights.map(weight => weight / weightSum);
 
     // Combine prices and weights
