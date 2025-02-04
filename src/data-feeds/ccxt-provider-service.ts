@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import ccxt, { Exchange, pro, Trade } from "ccxt";
+import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
@@ -116,45 +116,7 @@ export class CcxtFeed implements BaseDataFeed {
         marketIds.push(market.id);
       }
 
-      await this.populateInitialPrices(marketIds, exchangeName, exchange);
-
       void this.watch(exchange, marketIds, exchangeName);
-    }
-  }
-
-  private async populateInitialPrices(marketIds: string[], exchangeName: string, exchange: Exchange) {
-    try {
-      if (exchange.has["fetchTickers"]) {
-        this.logger.log(`Fetching last prices for ${marketIds} on ${exchangeName}`);
-        const tickers = await exchange.fetchTickers(marketIds);
-        for (const [marketId, ticker] of Object.entries(tickers)) {
-          if (ticker.last === undefined) {
-            this.logger.warn(`No last price found for ${marketId} on ${exchangeName}`);
-            continue;
-          }
-
-          this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
-        }
-      } else {
-        throw new Error("Exchange does not support fetchTickers");
-      }
-    } catch (e) {
-      this.logger.log(`Unable to retrieve ticker batch on ${exchangeName}: ${e}`);
-      this.logger.log(`Falling back to fetching individual tickers`);
-      for (const marketId of marketIds) {
-        this.logger.log(`Fetching last price for ${marketId} on ${exchangeName}`);
-        const ticker = await exchange.fetchTicker(marketId);
-        if (ticker === undefined) {
-          this.logger.warn(`Ticker not found for ${marketId} on ${exchangeName}`);
-          continue;
-        }
-        if (ticker.last === undefined) {
-          this.logger.log(`No last price found for ${marketId} on ${exchangeName}`);
-          continue;
-        }
-
-        this.setPrice(exchangeName, ticker.symbol, ticker.last, ticker.timestamp);
-      }
     }
   }
 
@@ -251,11 +213,41 @@ export class CcxtFeed implements BaseDataFeed {
 
     if (prices.length === 0) {
       this.logger.warn(`No prices found for ${JSON.stringify(feedId)}`);
+      // Attempt to fetch last known price from exchanges. Don't block on this request - data will be available later on re-query.
+      void this.fetchLastPrices(config);
       return undefined;
     }
 
     this.logger.debug(`Calculating results for ${JSON.stringify(feedId)}`);
     return this.weightedMedian(prices);
+  }
+
+  private fetchAttempted = new Set<FeedId>();
+
+  private async fetchLastPrices(config: FeedConfig) {
+    if (this.fetchAttempted.has(config.feed)) {
+      return;
+    } else {
+      this.fetchAttempted.add(config.feed);
+    }
+
+    for (const source of config.sources) {
+      const exchange: Exchange = this.exchangeByName.get(source.exchange);
+      const market = exchange.markets[source.symbol];
+      if (market == undefined) continue;
+      this.logger.log(`Fetching last price for ${market.id} on ${source.exchange}`);
+      const ticker = await exchange.fetchTicker(market.id);
+      if (ticker === undefined) {
+        this.logger.warn(`Ticker not found for ${market.id} on ${source.exchange}`);
+        continue;
+      }
+      if (ticker.last === undefined) {
+        this.logger.log(`No last price found for ${market.id} on ${source.exchange}`);
+        continue;
+      }
+
+      this.setPrice(source.exchange, ticker.symbol, ticker.last, ticker.timestamp);
+    }
   }
 
   private weightedMedian(prices: PriceInfo[]): number {
