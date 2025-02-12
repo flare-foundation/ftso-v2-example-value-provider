@@ -1885,5 +1885,34 @@
         "symbol": "TRUMP/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "BERA/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "BERA/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "BERA/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "BERA/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "BERA/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "BERA/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "BERA/USDT"
+      }
+    ]
   }
 ]
