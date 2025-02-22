@@ -3,11 +3,23 @@
     "feed": { "category": 1, "name": "FLR/USD" },
     "sources": [
       {
+        "exchange": "bybit",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "FLR/USDT"
+      },
+      {
         "exchange": "cryptocom",
         "symbol": "FLR/USD"
       },
       {
         "exchange": "gate",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "htx",
         "symbol": "FLR/USDT"
       },
       {
@@ -933,10 +945,6 @@
         "symbol": "TRX/USDT"
       },
       {
-        "exchange": "binance",
-        "symbol": "TRX/USD:TRX"
-      },
-      {
         "exchange": "bitget",
         "symbol": "TRX/USDT"
       },
@@ -988,10 +996,6 @@
     "sources": [
       {
         "exchange": "binance",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "bybit",
         "symbol": "DAI/USDT"
       },
       {
@@ -1375,6 +1379,10 @@
         "symbol": "PEPE/USDT"
       },
       {
+        "exchange": "binance",
+        "symbol": "PEPE/USDT"
+      },
+      {
         "exchange": "bingx",
         "symbol": "PEPE/USDT"
       },
@@ -1540,10 +1548,6 @@
         "symbol": "TAO/USDT"
       },
       {
-        "exchange": "lbank",
-        "symbol": "TAO/USDT"
-      },
-      {
         "exchange": "mexc",
         "symbol": "TAO/USDT"
       }
@@ -1686,10 +1690,6 @@
     "sources": [
       {
         "exchange": "probit",
-        "symbol": "JOULE/USDT"
-      },
-      {
-        "exchange": "bitrue",
         "symbol": "JOULE/USDT"
       },
       {

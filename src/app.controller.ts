@@ -1,12 +1,18 @@
-import { Body, Controller, Param, ParseIntPipe, Post, Inject, Logger } from "@nestjs/common";
+import { Body, Controller, Param, ParseIntPipe, Post, Inject, Logger, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ExampleProviderService } from "./app.service";
-import { FeedValuesRequest, FeedValuesResponse, RoundFeedValuesResponse } from "./dto/provider-requests.dto";
+import {
+  FeedValuesRequest,
+  FeedValuesResponse,
+  FeedVolumesResponse,
+  RoundFeedValuesResponse,
+} from "./dto/provider-requests.dto";
 
 @ApiTags("Feed Value Provider API")
 @Controller()
 export class ExampleProviderController {
   private logger = new Logger(ExampleProviderController.name);
+
   constructor(@Inject("EXAMPLE_PROVIDER_SERVICE") private readonly providerService: ExampleProviderService) {}
 
   @Post("feed-values/:votingRoundId")
@@ -26,6 +32,18 @@ export class ExampleProviderController {
   async getCurrentFeedValues(@Body() body: FeedValuesRequest): Promise<FeedValuesResponse> {
     const values = await this.providerService.getValues(body.feeds);
     this.logger.log(`Current feed values: ${JSON.stringify(values)}`);
+    return {
+      data: values,
+    };
+  }
+
+  @Post("volumes/")
+  async getFeedVolumes(
+    @Body() body: FeedValuesRequest,
+    @Query("window") windowSec: number = 60
+  ): Promise<FeedVolumesResponse> {
+    const values = await this.providerService.getVolumes(body.feeds, windowSec);
+    this.logger.log(`Feed volumes for last ${windowSec} seconds: ${JSON.stringify(values)}`);
     return {
       data: values,
     };
