@@ -1,11 +1,11 @@
 import { Logger } from "@nestjs/common";
 import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync } from "fs";
-import { FeedId, FeedValueData } from "../dto/provider-requests.dto";
+import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { retry, sleepFor } from "src/utils/retry";
-
-type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
+import { VolumeStore } from "./volumes";
+import { asError } from "../utils/error";
 
 enum FeedCategory {
   None = 0,
@@ -14,9 +14,6 @@ enum FeedCategory {
   Commodity = 3,
   Stock = 4,
 }
-
-const CONFIG_PREFIX = "src/config/";
-const RETRY_BACKOFF_MS = 10_000;
 
 interface FeedConfig {
   feed: FeedId;
@@ -32,9 +29,16 @@ interface PriceInfo {
   exchange: string;
 }
 
-const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
+type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
+
+const CONFIG_PATH = "src/config/";
+const RETRY_BACKOFF_MS = 10_000;
+
 // Parameter for exponential decay in time-weighted median price calculation
-const lambda = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : 0.00005;
+const LAMBDA = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : 0.00005;
+const TRADES_HISTORY_SIZE = process.env.TRADES_HISTORY_SIZE ? parseInt(process.env.TRADES_HISTORY_SIZE) : 1000; // 1000 is default in ccxt
+
+const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
 
 export class CcxtFeed implements BaseDataFeed {
   private readonly logger = new Logger(CcxtFeed.name);
@@ -43,8 +47,10 @@ export class CcxtFeed implements BaseDataFeed {
 
   private readonly exchangeByName: Map<string, Exchange> = new Map();
 
-  /** Symbol -> exchange -> price */
-  private readonly prices: Map<string, Map<string, PriceInfo>> = new Map();
+  /** Symbol -> exchange -> last price */
+  private readonly latestPrice: Map<string, Map<string, PriceInfo>> = new Map();
+  /** Symbol -> exchange -> volume */
+  private readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
 
   async start() {
     this.config = this.loadConfig();
@@ -60,9 +66,11 @@ export class CcxtFeed implements BaseDataFeed {
 
     this.logger.log(`Connecting to exchanges: ${JSON.stringify(Array.from(exchangeToSymbols.keys()))}`);
     const loadExchanges = [];
+    this.logger.log(`Initializing exchanges with trade limit ${TRADES_HISTORY_SIZE}`);
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
         const exchange: Exchange = new ccxt.pro[exchangeName]({ newUpdates: true });
+        exchange.options["tradesLimit"] = TRADES_HISTORY_SIZE;
         this.exchangeByName.set(exchangeName, exchange);
         loadExchanges.push([exchangeName, retry(async () => exchange.loadMarkets(), 2, RETRY_BACKOFF_MS, this.logger)]);
       } catch (e) {
@@ -101,6 +109,54 @@ export class CcxtFeed implements BaseDataFeed {
     };
   }
 
+  async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
+    let usdtToUsd: number | undefined;
+
+    const convertToUsd = async (price: number) => {
+      if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
+      if (usdtToUsd === undefined) {
+        this.logger.warn(`Unable to retrieve USDT to USD conversion rate`);
+        return undefined;
+      }
+      return price * usdtToUsd;
+    };
+
+    const res: FeedVolumeData[] = [];
+    for (const feed of feeds) {
+      const volMap = new Map<string, number>();
+
+      const volumeByExchange = this.volumes.get(feed.name);
+      if (volumeByExchange != undefined) {
+        for (const [exchange, volume] of volumeByExchange.entries()) {
+          volMap.set(exchange, volume.getVolume(volumeWindow));
+        }
+      }
+
+      if (feed.name.endsWith("/USD")) {
+        const usdtVolumeByExchange = this.volumes.get(feed.name.replace("/USD", "/USDT"));
+        if (usdtVolumeByExchange != undefined) {
+          for (const [exchange, volume] of usdtVolumeByExchange.entries()) {
+            const usdtVol = volume.getVolume(volumeWindow);
+            const usdVol = (await convertToUsd(usdtVol)) ?? 0;
+            volMap.set(exchange, usdVol + (volMap.get(exchange) || 0));
+          }
+        }
+      }
+
+      res.push(<FeedVolumeData>{
+        feed: feed,
+        volumes: Array.from(volMap.entries()).map(
+          ([exchange, volume]) =>
+            <Volume>{
+              exchange: exchange,
+              volume: Math.round(volume),
+            }
+        ),
+      });
+    }
+    return Promise.resolve(res);
+  }
+
   private async initWatchTrades(exchangeToSymbols: Map<string, Set<string>>) {
     for (const [exchangeName, symbols] of exchangeToSymbols) {
       const exchange = this.exchangeByName.get(exchangeName);
@@ -122,55 +178,89 @@ export class CcxtFeed implements BaseDataFeed {
 
   private async watch(exchange: Exchange, marketIds: string[], exchangeName: string) {
     this.logger.log(`Watching trades for ${marketIds} on exchange ${exchangeName}`);
+    if (exchange.has["watchTradesForSymbols"] && exchange.id != "bybit") {
+      void this.watchTradesForSymbols(exchange, marketIds);
+    } else if (exchange.has["watchTrades"]) {
+      marketIds.forEach(marketId => void this.watchTradesForSymbol(exchange, marketId));
+    } else {
+      this.logger.warn(`Not tracking ${exchange.id} for symbols ${marketIds}`);
+    }
+  }
 
-    if (exchange.has["watchTrades"]) {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        try {
-          const trades = await retry(
-            async () => exchange.watchTradesForSymbols(marketIds, null, 100),
-            RETRY_BACKOFF_MS
-          );
-          this.processTrades(trades, exchangeName);
-        } catch (e) {
-          this.logger.error(`Failed to watch trades for ${exchangeName}: ${e}`);
-          return;
-        }
-      }
-    } else if (exchange.has["fetchTrades"]) {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        try {
-          const trades: Trade[] = [];
-          for (const marketId of marketIds) {
-            const tradesForSymbol = await exchange.fetchTrades(marketId, null, 100);
-            trades.push(tradesForSymbol[tradesForSymbol.length - 1]);
-          }
-          this.processTrades(trades, exchangeName);
+  private async watchTradesForSymbols(exchange: Exchange, marketIds: string[]) {
+    const sinceBySymbol = new Map<string, number>();
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        const trades = await exchange.watchTradesForSymbols(marketIds);
 
+        // Some exchange impls don't respect the "since" filter parameter or guarantee trade ordering, so we retrieve the full trade buffer and filter manually.
+        const since = sinceBySymbol.get(trades[0].symbol) ?? 0;
+        const newTrades = trades.filter(trade => trade.timestamp > since).sort((a, b) => a.timestamp - b.timestamp);
+
+        if (newTrades.length === 0) {
           await sleepFor(1000);
-        } catch (e) {
-          this.logger.error(`Failed to fetch trades for ${exchangeName}: ${e}`);
-          await sleepFor(10_000);
+          continue;
         }
+
+        const lastTrade = newTrades.at(-1);
+        this.setPrice(exchange.id, lastTrade.symbol, lastTrade.price, lastTrade.timestamp);
+        sinceBySymbol.set(lastTrade.symbol, lastTrade.timestamp);
+
+        this.processVolume(exchange.id, lastTrade.symbol, newTrades);
+      } catch (e) {
+        const error = asError(e);
+        this.logger.debug(`Failed to watch trades for ${exchange.id}/${marketIds}: ${error}, will retry`);
+        await sleepFor(10_000);
       }
     }
   }
 
-  private processTrades(trades: Trade[], exchangeName: string) {
-    trades.forEach(trade => {
-      this.setPrice(exchangeName, trade.symbol, trade.price, trade.timestamp);
-    });
+  private async watchTradesForSymbol(exchange: Exchange, marketId: string) {
+    let since = undefined;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        const trades = await exchange.watchTrades(marketId, since);
+        if (trades.length === 0) {
+          await sleepFor(1_000);
+          continue;
+        }
+
+        // Seems not all exchanges guarantee trade ordering by timestamp
+        trades.sort((a, b) => a.timestamp - b.timestamp);
+
+        const lastTrade = trades.at(-1);
+        this.setPrice(exchange.id, lastTrade.symbol, lastTrade.price, lastTrade.timestamp);
+        since = lastTrade.timestamp + 1;
+
+        this.processVolume(exchange.id, lastTrade.symbol, trades);
+      } catch (e) {
+        const error = asError(e);
+        this.logger.debug(`Failed to watch trades for ${exchange.id}/${marketId}: ${error}, will retry`);
+        await sleepFor(5_000 + Math.random() * 10_000);
+      }
+    }
   }
 
-  private setPrice(exchangeName: string, symbol: string, price: number, timestamp: number) {
-    const prices = this.prices.get(symbol) || new Map<string, PriceInfo>();
+  private processVolume(exchangeId: string, symbol: string, trades: Trade[]) {
+    const exchangeVolumes = this.volumes.get(symbol) || new Map<string, VolumeStore>();
+    this.volumes.set(symbol, exchangeVolumes);
+
+    const volumeStore = exchangeVolumes.get(exchangeId) || new VolumeStore();
+    exchangeVolumes.set(exchangeId, volumeStore);
+
+    volumeStore.processTrades(trades);
+  }
+
+  private setPrice(exchangeName: string, symbol: string, price: number, timestamp?: number) {
+    const prices = this.latestPrice.get(symbol) || new Map<string, PriceInfo>();
     prices.set(exchangeName, {
       value: price,
       time: timestamp ?? Date.now(),
       exchange: exchangeName,
     });
-    this.prices.set(symbol, prices);
+    this.latestPrice.set(symbol, prices);
   }
 
   private async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
@@ -195,7 +285,7 @@ export class CcxtFeed implements BaseDataFeed {
 
     // Gather all available prices
     for (const source of config.sources) {
-      const info = this.prices.get(source.symbol)?.get(source.exchange);
+      const info = this.latestPrice.get(source.symbol)?.get(source.exchange);
       // Skip if no price information is available
       if (!info) continue;
 
@@ -264,7 +354,7 @@ export class CcxtFeed implements BaseDataFeed {
     // Calculate exponential weights
     const weights = prices.map(data => {
       const timeDifference = now - data.time;
-      return Math.exp(-lambda * timeDifference); // Exponential decay
+      return Math.exp(-LAMBDA * timeDifference); // Exponential decay
     });
 
     // Normalize weights to sum to 1
@@ -312,10 +402,10 @@ export class CcxtFeed implements BaseDataFeed {
     let configPath: string;
     switch (network) {
       case "local-test":
-        configPath = CONFIG_PREFIX + "test-feeds.json";
+        configPath = CONFIG_PATH + "test-feeds.json";
         break;
       default:
-        configPath = CONFIG_PREFIX + "feeds.json";
+        configPath = CONFIG_PATH + "feeds.json";
     }
 
     try {

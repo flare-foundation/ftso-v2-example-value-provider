@@ -28,7 +28,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.1",
-    "ccxt": "^4.0.64",
+    "ccxt": "^4",
     "class-transformer": "^0.5.1",
     "dotenv": "^16.4.5",
     "helmet": "^7.1.0",
