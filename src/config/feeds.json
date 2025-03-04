@@ -7,10 +7,6 @@
         "symbol": "FLR/USDT"
       },
       {
-        "exchange": "coinbase",
-        "symbol": "FLR/USDT"
-      },
-      {
         "exchange": "cryptocom",
         "symbol": "FLR/USD"
       },
@@ -1021,6 +1017,15 @@
     ]
   },
   {
+    "feed": { "category": 1, "name": "USDS/USD" },
+    "sources": [
+      {
+        "exchange": "bitget",
+        "symbol": "USDS/USDT"
+      }
+    ]
+  },
+  {
     "feed": { "category": 1, "name": "BCH/USD" },
     "sources": [
       {
@@ -1484,6 +1489,31 @@
       {
         "exchange": "bitso",
         "symbol": "FTM/USD"
+      }
+    ]
+  },
+  {
+    "feed": { "category": 1, "name": "S/USD" },
+    "sources": [
+      {
+        "exchange": "gate",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "binance",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "S/USDT"
       }
     ]
   },
