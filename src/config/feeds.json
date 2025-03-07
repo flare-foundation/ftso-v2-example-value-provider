@@ -1493,31 +1493,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "S/USD" },
-    "sources": [
-      {
-        "exchange": "gate",
-        "symbol": "S/USDT"
-      },
-      {
-        "exchange": "bybit",
-        "symbol": "S/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "S/USDT"
-      },
-      {
-        "exchange": "binance",
-        "symbol": "S/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "S/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "ONDO/USD" },
     "sources": [
       {
@@ -1858,6 +1833,18 @@
       },
       {
         "exchange": "mexc",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "S/USDT"
+      },
+      {
+        "exchange": "kucoin",
         "symbol": "S/USDT"
       }
     ]
