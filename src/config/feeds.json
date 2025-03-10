@@ -1020,8 +1020,28 @@
     "feed": { "category": 1, "name": "USDS/USD" },
     "sources": [
       {
+        "exchange": "bybit",
+        "symbol": "DAI/USDT"
+      },
+      {
         "exchange": "bitget",
-        "symbol": "USDS/USDT"
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "cryptocom",
+        "symbol": "DAI/USD"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "DAI/USDT"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "DAI/USDT"
       }
     ]
   },
