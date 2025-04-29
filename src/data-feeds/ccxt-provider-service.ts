@@ -3,7 +3,7 @@ import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
-import { retry, sleepFor } from "src/utils/retry";
+import { retry, sleepFor } from "../utils/retry";
 import { VolumeStore } from "./volumes";
 import { asError } from "../utils/error";
 
