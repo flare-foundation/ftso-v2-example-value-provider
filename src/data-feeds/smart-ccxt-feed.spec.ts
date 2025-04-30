@@ -1,6 +1,6 @@
 import { SmartCcxtFeed, loadSmartFeedConfigFromEnv } from "./smart-ccxt-feed";
 import { FeedId } from "../dto/provider-requests.dto";
-
+import { Logger } from "@nestjs/common";
 
 function mockPriceInfo(value: number, exchange: string, time: number = Date.now()) {
   return { value, exchange, time };
@@ -9,7 +9,12 @@ function mockPriceInfo(value: number, exchange: string, time: number = Date.now(
 jest.mock("./ccxt-provider-service", () => {
   return {
     CcxtFeed: class {
-      public logger = { warn: jest.fn(), error: jest.fn(), debug: jest.fn() };
+      public logger: Partial<Logger> = {
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+      };
       public latestPrice = new Map();
       public volumes = new Map();
       public config = [];
