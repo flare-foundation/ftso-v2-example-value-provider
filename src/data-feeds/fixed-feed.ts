@@ -23,7 +23,7 @@ export class FixedFeed implements BaseDataFeed {
     return Promise.all(promises);
   }
 
-  async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
+  async getVolumes(_feeds: FeedId[], _volumeWindow: number): Promise<FeedVolumeData[]> {
     return Promise.resolve([]);
   }
 }

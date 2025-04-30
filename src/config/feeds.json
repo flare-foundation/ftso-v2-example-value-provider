@@ -1,6 +1,10 @@
 [
   {
     "feed": { "category": 1, "name": "FLR/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bybit",
@@ -30,6 +34,10 @@
   },
   {
     "feed": { "category": 1, "name": "SGB/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bitstamp",
@@ -47,6 +55,10 @@
   },
   {
     "feed": { "category": 1, "name": "XRP/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bitget",
@@ -80,6 +92,10 @@
   },
   {
     "feed": { "category": 1, "name": "LTC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -113,6 +129,10 @@
   },
   {
     "feed": { "category": 1, "name": "XLM/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -154,6 +174,10 @@
   },
   {
     "feed": { "category": 1, "name": "DOGE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -188,6 +212,10 @@
   },
   {
     "feed": { "category": 1, "name": "ADA/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -222,6 +250,10 @@
   },
   {
     "feed": { "category": 1, "name": "ALGO/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -251,6 +283,10 @@
   },
   {
     "feed": { "category": 1, "name": "BTC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -284,6 +320,10 @@
   },
   {
     "feed": { "category": 1, "name": "ETH/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -317,6 +357,10 @@
   },
   {
     "feed": { "category": 1, "name": "FIL/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -350,6 +394,10 @@
   },
   {
     "feed": { "category": 1, "name": "ARB/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -383,6 +431,10 @@
   },
   {
     "feed": { "category": 1, "name": "AVAX/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -416,6 +468,10 @@
   },
   {
     "feed": { "category": 1, "name": "BNB/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -441,6 +497,10 @@
   },
   {
     "feed": { "category": 1, "name": "MATIC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -450,13 +510,17 @@
   },
   {
     "feed": { "category": 1, "name": "POL/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bingx",
         "symbol": "POL/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "POL/USDT"
       },
       {
@@ -483,6 +547,10 @@
   },
   {
     "feed": { "category": 1, "name": "SOL/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -516,6 +584,10 @@
   },
   {
     "feed": { "category": 1, "name": "USDC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -541,6 +613,10 @@
   },
   {
     "feed": { "category": 1, "name": "USDT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bitstamp",
@@ -558,6 +634,10 @@
   },
   {
     "feed": { "category": 1, "name": "XDC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bybit",
@@ -587,6 +667,10 @@
   },
   {
     "feed": { "category": 1, "name": "TRX/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -620,6 +704,10 @@
   },
   {
     "feed": { "category": 1, "name": "DOT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -653,6 +741,10 @@
   },
   {
     "feed": { "category": 1, "name": "LINK/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -686,6 +778,10 @@
   },
   {
     "feed": { "category": 1, "name": "ICP/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -719,6 +815,10 @@
   },
   {
     "feed": { "category": 1, "name": "SHIB/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -752,6 +852,10 @@
   },
   {
     "feed": { "category": 1, "name": "BCH/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -785,6 +889,10 @@
   },
   {
     "feed": { "category": 1, "name": "ATOM/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -818,6 +926,10 @@
   },
   {
     "feed": { "category": 1, "name": "UNI/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -851,6 +963,10 @@
   },
   {
     "feed": { "category": 1, "name": "ETC/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -888,6 +1004,10 @@
   },
   {
     "feed": { "category": 1, "name": "INJ/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -921,6 +1041,10 @@
   },
   {
     "feed": { "category": 2, "name": "EUR/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -935,6 +1059,10 @@
   },
   {
     "feed": { "category": 1, "name": "TRX/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -960,6 +1088,10 @@
   },
   {
     "feed": { "category": 1, "name": "TON/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bitget",
@@ -989,6 +1121,10 @@
   },
   {
     "feed": { "category": 1, "name": "DAI/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -997,14 +1133,6 @@
       {
         "exchange": "bitget",
         "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USD"
       },
       {
         "exchange": "gate",
@@ -1018,6 +1146,10 @@
   },
   {
     "feed": { "category": 1, "name": "USDS/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bybit",
@@ -1047,6 +1179,10 @@
   },
   {
     "feed": { "category": 1, "name": "BCH/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1080,6 +1216,10 @@
   },
   {
     "feed": { "category": 1, "name": "NEAR/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1113,6 +1253,10 @@
   },
   {
     "feed": { "category": 1, "name": "LEO/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "gate",
@@ -1123,17 +1267,21 @@
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USD"
       }
     ]
   },
   {
     "feed": { "category": 1, "name": "WIF/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1167,6 +1315,10 @@
   },
   {
     "feed": { "category": 1, "name": "BONK/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1200,6 +1352,10 @@
   },
   {
     "feed": { "category": 1, "name": "JUP/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1233,6 +1389,10 @@
   },
   {
     "feed": { "category": 1, "name": "ETHFI/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1262,6 +1422,10 @@
   },
   {
     "feed": { "category": 1, "name": "ENA/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1291,6 +1455,10 @@
   },
   {
     "feed": { "category": 1, "name": "PYTH/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1324,6 +1492,10 @@
   },
   {
     "feed": { "category": 1, "name": "HNT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binanceus",
@@ -1365,6 +1537,10 @@
   },
   {
     "feed": { "category": 1, "name": "SUI/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1379,7 +1555,7 @@
         "symbol": "SUI/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "SUI/USDT"
       },
       {
@@ -1398,6 +1574,10 @@
   },
   {
     "feed": { "category": 1, "name": "PEPE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1412,7 +1592,7 @@
         "symbol": "PEPE/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "PEPE/USDT"
       },
       {
@@ -1435,6 +1615,10 @@
   },
   {
     "feed": { "category": 1, "name": "QNT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1464,6 +1648,10 @@
   },
   {
     "feed": { "category": 1, "name": "AAVE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1478,7 +1666,7 @@
         "symbol": "AAVE/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "AAVE/USDT"
       },
       {
@@ -1497,23 +1685,23 @@
   },
   {
     "feed": { "category": 1, "name": "FTM/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "kraken",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitfinex2",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitso",
         "symbol": "FTM/USD"
       }
     ]
   },
   {
     "feed": { "category": 1, "name": "ONDO/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1551,6 +1739,10 @@
   },
   {
     "feed": { "category": 1, "name": "TAO/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bingx",
@@ -1580,6 +1772,10 @@
   },
   {
     "feed": { "category": 1, "name": "FET/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1594,7 +1790,7 @@
         "symbol": "FET/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "FET/USDT"
       },
       {
@@ -1613,6 +1809,10 @@
   },
   {
     "feed": { "category": 1, "name": "RENDER/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1650,6 +1850,10 @@
   },
   {
     "feed": { "category": 1, "name": "NOT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1660,7 +1864,7 @@
         "symbol": "NOT/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "NOT/USDT"
       },
       {
@@ -1683,6 +1887,10 @@
   },
   {
     "feed": { "category": 1, "name": "RUNE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "ascendex",
@@ -1712,6 +1920,10 @@
   },
   {
     "feed": { "category": 1, "name": "JOULE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "probit",
@@ -1725,6 +1937,10 @@
   },
   {
     "feed": { "category": 1, "name": "USDX/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bitmart",
@@ -1734,6 +1950,10 @@
   },
   {
     "feed": { "category": 1, "name": "HBAR/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1763,6 +1983,10 @@
   },
   {
     "feed": { "category": 1, "name": "PENGU/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1788,6 +2012,10 @@
   },
   {
     "feed": { "category": 1, "name": "HYPE/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "kucoin",
@@ -1809,6 +2037,10 @@
   },
   {
     "feed": { "category": 1, "name": "APT/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bybit",
@@ -1838,6 +2070,10 @@
   },
   {
     "feed": { "category": 1, "name": "S/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
@@ -1871,27 +2107,27 @@
   },
   {
     "feed": { "category": 1, "name": "PAXG/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "kucoin",
         "symbol": "PAXG/USDT"
       },
       {
-        "exchange": "xt",
-        "symbol": "PAXG/USDT"
-      },
-      {
         "exchange": "mexc",
-        "symbol": "PAXG/USDT"
-      },
-      {
-        "exchange": "bybit",
         "symbol": "PAXG/USDT"
       }
     ]
   },
   {
     "feed": { "category": 1, "name": "TRUMP/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "bybit",
@@ -1925,6 +2161,10 @@
   },
   {
     "feed": { "category": 1, "name": "BERA/USD" },
+    "config": {
+      "outlierThresholdPercent": 0.5,
+      "useVolumeWeighting": true
+    },
     "sources": [
       {
         "exchange": "binance",
