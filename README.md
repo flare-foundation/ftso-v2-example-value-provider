@@ -40,7 +40,7 @@ docker run --rm -it --publish "0.0.0.0:3101:3101" \
   -e OUTLIER_THRESHOLD_PERCENT=0.5 \
   -e VOLUME_LOOKBACK_SECONDS=3600 \
   -e MAX_PRICE_AGE_MS=30000 \
-  ghcr.io/flare-foundation/ftso-v2-example-value-provider
+  ghcr.io/animatow/ftso-v2-value-provider:dev
 ```
 
 The service will be available on:  
