@@ -1,6 +1,7 @@
 import { Logger } from "@nestjs/common";
 import ccxt, { Exchange, Trade } from "ccxt";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { retry, sleepFor } from "../utils/retry";
@@ -41,16 +42,57 @@ const TRADES_HISTORY_SIZE = process.env.TRADES_HISTORY_SIZE ? parseInt(process.e
 const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
 
 export class CcxtFeed implements BaseDataFeed {
-  private readonly logger = new Logger(CcxtFeed.name);
+  protected readonly logger = new Logger(CcxtFeed.name);
   protected initialized = false;
-  private config: FeedConfig[];
+  protected config: FeedConfig[];
 
-  private readonly exchangeByName: Map<string, Exchange> = new Map();
+  protected readonly exchangeByName: Map<string, Exchange> = new Map();
 
   /** Symbol -> exchange -> last price */
-  private readonly latestPrice: Map<string, Map<string, PriceInfo>> = new Map();
+  protected readonly latestPrice: Map<string, Map<string, PriceInfo>> = new Map();
   /** Symbol -> exchange -> volume */
-  private readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
+  protected readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
+  protected lastValidFeedPrice: Map<string, { value: number; time: number }> = new Map();
+
+  private exportFallbackPrices() {
+    const fallback: Record<string, number> = {};
+
+    for (const [key, data] of this.lastValidFeedPrice.entries()) {
+      if (data.value > 0) {
+        fallback[key] = data.value;
+      }
+    }
+
+    const path = join(process.cwd(), 'src/config/fallback-prices.json');
+    try {
+      writeFileSync(path, JSON.stringify(fallback, null, 2));
+      this.logger.log(`📦 Fallback-Preise aktualisiert unter ${path}`);
+    } catch (e) {
+      this.logger.error(`❌ Fehler beim Schreiben von fallback-prices.json: ${e}`);
+    }
+  }
+
+  async getSafeFeedPrice(feedId: FeedId): Promise<number> {
+    const now = Date.now();
+    const key = `${feedId.category}-${feedId.name}`;
+    const price = await this.getFeedPrice(feedId);
+
+    if (typeof price === 'number' && price > 0) {
+      this.lastValidFeedPrice.set(key, { value: price, time: now });
+      this.exportFallbackPrices();
+      return price;
+    }
+
+    const fallback = this.lastValidFeedPrice.get(key);
+    if (fallback && now - fallback.time < 5 * 60 * 1000) {
+      this.logger.warn(`⚠️ Preis veraltet, verwende alten Wert für ${feedId.name}: ${fallback.value}`);
+      return fallback.value;
+    }
+
+    const fallbackPrice = 1;
+    this.logger.warn(`❌ Kein gültiger Preis für ${feedId.name}, Rückgabe Defaultwert ${fallbackPrice}`);
+    return fallbackPrice;
+  }
 
   async start() {
     this.config = this.loadConfig();
@@ -69,7 +111,23 @@ export class CcxtFeed implements BaseDataFeed {
     this.logger.log(`Initializing exchanges with trade limit ${TRADES_HISTORY_SIZE}`);
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
-        const exchange: Exchange = new ccxt.pro[exchangeName]({ newUpdates: true });
+        let ExchangeClass: any;
+        if (ccxt.pro && ccxt.pro[exchangeName]) {
+          ExchangeClass = ccxt.pro[exchangeName];
+        } else if (ccxt[exchangeName]) {
+          ExchangeClass = ccxt[exchangeName];
+        } else {
+          this.logger.warn(`Exchange ${exchangeName} not found in ccxt or ccxt.pro`);
+          continue;
+        }
+
+        let exchange: Exchange;
+        try {
+          exchange = new ExchangeClass({ newUpdates: true });
+        } catch (e) {
+          this.logger.warn(`Failed to instantiate exchange ${exchangeName}, ignoring: ${e}`);
+          continue;
+        }
         exchange.options["tradesLimit"] = TRADES_HISTORY_SIZE;
         this.exchangeByName.set(exchangeName, exchange);
         loadExchanges.push([exchangeName, retry(async () => exchange.loadMarkets(), 2, RETRY_BACKOFF_MS, this.logger)]);
@@ -102,7 +160,7 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
-    const price = await this.getFeedPrice(feed);
+    const price = await this.getSafeFeedPrice(feed);
     return {
       feed: feed,
       value: price,
@@ -263,7 +321,7 @@ export class CcxtFeed implements BaseDataFeed {
     this.latestPrice.set(symbol, prices);
   }
 
-  private async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
+  protected async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
     const config = this.config.find(config => feedsEqual(config.feed, feedId));
     if (!config) {
       this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
