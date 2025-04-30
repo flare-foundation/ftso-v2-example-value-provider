@@ -3,7 +3,7 @@ import { FeedId, FeedValueData, FeedVolumeData } from "./dto/provider-requests.d
 import { BaseDataFeed } from "./data-feeds/base-feed";
 
 @Injectable()
-export class ExampleProviderService {
+export class ProviderService {
   constructor(private readonly dataFeed: BaseDataFeed) {}
 
   async getValue(feed: FeedId): Promise<FeedValueData> {

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ExampleProviderController } from "./app.controller";
-import { ExampleProviderService } from "./app.service";
+import { ProviderController } from "./app.controller";
+import { ProviderService } from "./app.service";
 import { FeedId, FeedValuesRequest } from "./dto/provider-requests.dto";
 
-describe("ExampleProviderController", () => {
-  let controller: ExampleProviderController;
-  let service: ExampleProviderService;
+describe("ProviderController", () => {
+  let controller: ProviderController;
+  let service: ProviderService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ExampleProviderController],
+      controllers: [ProviderController],
       providers: [
         {
           provide: "EXAMPLE_PROVIDER_SERVICE",
@@ -21,8 +21,8 @@ describe("ExampleProviderController", () => {
       ],
     }).compile();
 
-    controller = module.get<ExampleProviderController>(ExampleProviderController);
-    service = module.get<ExampleProviderService>("EXAMPLE_PROVIDER_SERVICE");
+    controller = module.get<ProviderController>(ProviderController);
+    service = module.get<ProviderService>("EXAMPLE_PROVIDER_SERVICE");
   });
 
   it("should be defined", () => {

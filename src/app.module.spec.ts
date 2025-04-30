@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { RandomExampleProviderModule } from "./app.module";
-import { ExampleProviderController } from "./app.controller";
+import { ProviderController } from "./app.controller";
 
 describe("RandomExampleProviderModule", () => {
   jest.setTimeout(30000);
@@ -16,8 +16,8 @@ describe("RandomExampleProviderModule", () => {
     expect(module).toBeDefined();
   });
 
-  it("should provide ExampleProviderController", () => {
-    const controller = module.get<ExampleProviderController>(ExampleProviderController);
+  it("should provide ProviderController", () => {
+    const controller = module.get<ProviderController>(ProviderController);
     expect(controller).toBeDefined();
   });
 });

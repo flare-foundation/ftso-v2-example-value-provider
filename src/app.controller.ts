@@ -1,6 +1,6 @@
 import { Body, Controller, Param, ParseIntPipe, Post, Inject, Logger, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { ExampleProviderService } from "./app.service";
+import { ProviderService } from "./app.service";
 import {
   FeedValuesRequest,
   FeedValuesResponse,
@@ -10,10 +10,10 @@ import {
 
 @ApiTags("Feed Value Provider API")
 @Controller()
-export class ExampleProviderController {
-  private logger = new Logger(ExampleProviderController.name);
+export class ProviderController {
+  private logger = new Logger(ProviderController.name);
 
-  constructor(@Inject("EXAMPLE_PROVIDER_SERVICE") private readonly providerService: ExampleProviderService) {}
+  constructor(@Inject("EXAMPLE_PROVIDER_SERVICE") private readonly providerService: ProviderService) {}
 
   @Post("feed-values/:votingRoundId")
   async getFeedValues(

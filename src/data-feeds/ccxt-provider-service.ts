@@ -63,7 +63,7 @@ export class CcxtFeed implements BaseDataFeed {
       }
     }
 
-    const path = join(process.cwd(), 'src/config/fallback-prices.json');
+    const path = join(process.cwd(), "src/config/fallback-prices.json");
     try {
       writeFileSync(path, JSON.stringify(fallback, null, 2));
       this.logger.log(`📦 Fallback-Preise aktualisiert unter ${path}`);

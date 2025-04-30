@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ExampleProviderService } from "./app.service";
+import { ProviderService } from "./app.service";
 import { BaseDataFeed } from "./data-feeds/base-feed";
 import { FeedId } from "./dto/provider-requests.dto";
 
-describe("ExampleProviderService", () => {
-  let service: ExampleProviderService;
+describe("ProviderService", () => {
+  let service: ProviderService;
   let dataFeed: BaseDataFeed;
 
   beforeEach(async () => {
@@ -20,11 +20,11 @@ describe("ExampleProviderService", () => {
           provide: BaseDataFeed,
           useValue: dataFeedMock,
         },
-        ExampleProviderService,
+        ProviderService,
       ],
     }).compile();
 
-    service = module.get<ExampleProviderService>(ExampleProviderService);
+    service = module.get<ProviderService>(ProviderService);
     dataFeed = module.get<BaseDataFeed>(BaseDataFeed);
   });
 

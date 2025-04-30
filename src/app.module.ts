@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { ExampleProviderService } from "./app.service";
-import { ExampleProviderController } from "./app.controller";
+import { ProviderService } from "./app.service";
+import { ProviderController } from "./app.controller";
 import { CcxtFeed } from "./data-feeds/ccxt-provider-service";
 import { RandomFeed } from "./data-feeds/random-feed";
 import { BaseDataFeed } from "./data-feeds/base-feed";
@@ -12,7 +12,7 @@ dotenv.config();
 
 @Module({
   imports: [],
-  controllers: [ExampleProviderController],
+  controllers: [ProviderController],
   providers: [
     {
       provide: "EXAMPLE_PROVIDER_SERVICE",
@@ -35,7 +35,7 @@ dotenv.config();
           dataFeed = ccxtFeed;
         }
 
-        const service = new ExampleProviderService(dataFeed);
+        const service = new ProviderService(dataFeed);
         return service;
       },
     },
