@@ -18,7 +18,16 @@ jest.mock("./ccxt-provider-service", () => {
       public latestPrice = new Map();
       public volumes = new Map();
       public config = [];
-      async getFeedPrice(_feedId: FeedId): Promise<number | undefined> {
+      async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
+        const symbolMap = this.latestPrice.get(feedId.name);
+        if (!symbolMap) return undefined;
+
+        for (const [_, info] of symbolMap.entries()) {
+          if (info.value !== undefined) {
+            return info.value;
+          }
+        }
+
         return undefined;
       }
     },
@@ -153,10 +162,7 @@ describe("SmartCcxtFeed", () => {
     const feedId: FeedId = { category: 1, name: "BTC/USD" };
     const oldTimestamp = Date.now() - 31_000; // älter als 30 Sekunden
 
-    feed["latestPrice"].set(
-      "BTC/USD",
-      new Map([["binance", mockPriceInfo(10000, "binance", oldTimestamp)]])
-    );
+    feed["latestPrice"].set("BTC/USD", new Map([["binance", mockPriceInfo(10000, "binance", oldTimestamp)]]));
 
     feed["config"] = [
       {
@@ -177,6 +183,7 @@ describe("SmartCcxtFeed", () => {
 
     const now = Date.now();
 
+    // Preise in latestPrice simulieren
     feed["latestPrice"].set(
       "BTC/USDT",
       new Map([["binance", mockPriceInfo(10000, "binance", now)]])
@@ -187,16 +194,22 @@ describe("SmartCcxtFeed", () => {
       new Map([["binance", mockPriceInfo(1.01, "binance", now)]])
     );
 
+    // Feed-Konfiguration setzen
     feed["config"] = [
       {
         feed: { category: 1, name: "BTC/USD" },
         sources: [{ symbol: "BTC/USDT", exchange: "binance" }],
+      },
+      {
+        feed: { category: 1, name: "USDT/USD" },
+        sources: [{ symbol: "USDT/USD", exchange: "binance" }],
       },
     ];
 
     const price = await (feed as any).getFeedPrice({ category: 1, name: "BTC/USD" });
     expect(price).toBeCloseTo(10100, 2);
   });
+
 
   it("should calculate volume-weighted average when enabled", async () => {
     const feed = new SmartCcxtFeed({
@@ -237,5 +250,4 @@ describe("SmartCcxtFeed", () => {
     const expected = (10000 * 100 + 11000 * 300) / 400;
     expect(price).toBeCloseTo(expected, 2);
   });
-
 });
