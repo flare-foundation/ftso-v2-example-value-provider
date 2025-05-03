@@ -2,22 +2,32 @@ import { FeedId } from "../dto/provider-requests.dto";
 import { CcxtFeed } from "./ccxt-provider-service";
 import { BaseDataFeed } from "./base-feed";
 
-const MAX_PRICE_AGE_MS = parseInt(process.env.MAX_PRICE_AGE_MS || '30000');
-const OUTLIER_THRESHOLD_PERCENT = 0.5;
-const VOLUME_LOOKBACK_WINDOW_SECONDS = 3600;
+type PriceInfo = {
+  value: number;
+  time: number;
+  exchange: string;
+};
 
 export interface SmartCcxtFeedConfig {
   enableOutlierFilter?: boolean;
   enableVolumeWeighting?: boolean;
   outlierThresholdPercent?: number;
   volumeLookbackSeconds?: number;
+  enableMaxPriceAge?: boolean;
+  maxPriceAgeMs?: number;
+  enableWeightedMedian?: boolean;
+  lambda?: number;
 }
 
 export function loadSmartFeedConfigFromEnv(): SmartCcxtFeedConfig {
   const enableOutlierFilter = process.env.ENABLE_OUTLIER_FILTER === "true";
   const enableVolumeWeighting = process.env.ENABLE_VOLUME_WEIGHTING === "true";
+  const enableMaxPriceAge = process.env.ENABLE_MAX_PRICE_AGE !== "true";
+  const maxPriceAgeMs = parseInt(process.env.MAX_PRICE_AGE_MS || "30000", 10);
+  const enableWeightedMedian = process.env.ENABLE_WEIGHTED_MEDIAN === "true";
+  const lambda = parseFloat(process.env.MEDIAN_DECAY || "0.00005");
 
-  let outlierThresholdPercent = OUTLIER_THRESHOLD_PERCENT;
+  let outlierThresholdPercent = 0.5;
   if (process.env.OUTLIER_THRESHOLD_PERCENT) {
     const parsed = parseFloat(process.env.OUTLIER_THRESHOLD_PERCENT);
     if (!isNaN(parsed)) {
@@ -25,7 +35,7 @@ export function loadSmartFeedConfigFromEnv(): SmartCcxtFeedConfig {
     }
   }
 
-  let volumeLookbackSeconds = VOLUME_LOOKBACK_WINDOW_SECONDS;
+  let volumeLookbackSeconds = 3600;
   if (process.env.VOLUME_LOOKBACK_SECONDS) {
     const parsed = parseInt(process.env.VOLUME_LOOKBACK_SECONDS, 10);
     if (!isNaN(parsed)) {
@@ -38,6 +48,10 @@ export function loadSmartFeedConfigFromEnv(): SmartCcxtFeedConfig {
     enableVolumeWeighting,
     outlierThresholdPercent,
     volumeLookbackSeconds,
+    enableMaxPriceAge,
+    maxPriceAgeMs,
+    enableWeightedMedian,
+    lambda,
   };
 }
 
@@ -46,13 +60,21 @@ export class SmartCcxtFeed extends CcxtFeed implements BaseDataFeed {
   private readonly enableVolumeWeighting: boolean;
   private readonly outlierThresholdPercent: number;
   private readonly volumeLookbackSeconds: number;
+  private readonly enableMaxPriceAge: boolean;
+  private readonly maxPriceAgeMs: number;
+  private readonly enableWeightedMedian: boolean;
+  private readonly lambda: number;
 
   constructor(configOverrides: SmartCcxtFeedConfig = loadSmartFeedConfigFromEnv()) {
     super();
     this.enableOutlierFilter = configOverrides.enableOutlierFilter ?? true;
     this.enableVolumeWeighting = configOverrides.enableVolumeWeighting ?? true;
-    this.outlierThresholdPercent = configOverrides.outlierThresholdPercent ?? OUTLIER_THRESHOLD_PERCENT;
-    this.volumeLookbackSeconds = configOverrides.volumeLookbackSeconds ?? VOLUME_LOOKBACK_WINDOW_SECONDS;
+    this.outlierThresholdPercent = configOverrides.outlierThresholdPercent ?? 0.5;
+    this.volumeLookbackSeconds = configOverrides.volumeLookbackSeconds ?? 3600;
+    this.enableMaxPriceAge = configOverrides.enableMaxPriceAge ?? true;
+    this.maxPriceAgeMs = configOverrides.maxPriceAgeMs ?? 30000;
+    this.enableWeightedMedian = configOverrides.enableWeightedMedian ?? false;
+    this.lambda = configOverrides.lambda ?? 0.00005;
 
     this.logger.log(
       `SmartCcxtFeed initialized with config: ${JSON.stringify({
@@ -60,6 +82,10 @@ export class SmartCcxtFeed extends CcxtFeed implements BaseDataFeed {
         enableVolumeWeighting: this.enableVolumeWeighting,
         outlierThresholdPercent: this.outlierThresholdPercent,
         volumeLookbackSeconds: this.volumeLookbackSeconds,
+        enableMaxPriceAge: this.enableMaxPriceAge,
+        maxPriceAgeMs: this.maxPriceAgeMs,
+        enableWeightedMedian: this.enableWeightedMedian,
+        lambda: this.lambda,
       })}`
     );
   }
@@ -78,7 +104,7 @@ export class SmartCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     for (const source of config.sources) {
       const info = this.latestPrice.get(source.symbol)?.get(source.exchange);
-      if (!info || now - info.time > MAX_PRICE_AGE_MS) continue;
+      if (!info || (this.enableMaxPriceAge && now - info.time > this.maxPriceAgeMs)) continue;
 
       let price = info.value;
       if (source.symbol.endsWith("USDT")) {
@@ -138,9 +164,7 @@ export class SmartCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
       const info = this.latestPrice.get(symbol)?.get(exchange);
       const freshnessWeight =
-        info && info.time
-          ? Math.max(0, 1 - (now - info.time) / MAX_PRICE_AGE_MS)
-          : 1;
+        info && info.time ? (this.enableMaxPriceAge ? Math.max(0, 1 - (now - info.time) / this.maxPriceAgeMs) : 1) : 1;
 
       const finalWeight = volumeWeight * freshnessWeight;
 
