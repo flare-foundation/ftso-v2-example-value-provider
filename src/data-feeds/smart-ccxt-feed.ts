@@ -2,11 +2,12 @@ import { FeedId } from "../dto/provider-requests.dto";
 import { CcxtFeed } from "./ccxt-provider-service";
 import { BaseDataFeed } from "./base-feed";
 
-type PriceInfo = {
-  value: number;
-  time: number;
-  exchange: string;
-};
+// type PriceInfo is reserved for future use (e.g., weighted median calculations)
+// type PriceInfo = {
+//   value: number;
+//   time: number;
+//   exchange: string;
+// };
 
 export interface SmartCcxtFeedConfig {
   enableOutlierFilter?: boolean;
