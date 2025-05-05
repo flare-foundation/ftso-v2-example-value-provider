@@ -37,6 +37,7 @@ export class VolumeStore {
       const volume = this.calculateVolume(trade);
       this.volumeSec[tSec % HISTORY_SEC] += volume;
       this.lastTs = trade.timestamp;
+      //this.logger.debug(`Trade verarbeitet für ${trade.symbol} mit Volumen: ${volume}`);
     }
   }
 

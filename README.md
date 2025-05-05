@@ -35,8 +35,10 @@ The provider behavior can be customized via environment variables:
 ```bash
 docker run --rm -it --publish "0.0.0.0:3101:3101" \
   -e VALUE_PROVIDER_IMPL=smartccxt \
-  -e ENABLE_OUTLIER_FILTER=true \
-  -e ENABLE_VOLUME_WEIGHTING=true \
+  -e ENABLE_OUTLIER_FILTER=false \
+  -e ENABLE_VOLUME_WEIGHTING=false \
+  -e ENABLE_WEIGHTED_MEDIAN=true \
+  -e ENABLE_MAX_PRICE_AGE=true \
   -e OUTLIER_THRESHOLD_PERCENT=0.5 \
   -e VOLUME_LOOKBACK_SECONDS=3600 \
   -e MAX_PRICE_AGE_MS=30000 \

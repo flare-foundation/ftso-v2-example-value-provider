@@ -77,7 +77,7 @@ export class CcxtFeed implements BaseDataFeed {
     const key = `${feedId.category}-${feedId.name}`;
     const price = await this.getFeedPrice(feedId);
 
-    if (typeof price === 'number' && price > 0) {
+    if (typeof price === "number" && price > 0) {
       this.lastValidFeedPrice.set(key, { value: price, time: now });
       this.exportFallbackPrices();
       return price;
@@ -399,7 +399,7 @@ export class CcxtFeed implements BaseDataFeed {
     }
   }
 
-  private weightedMedian(prices: PriceInfo[]): number {
+  protected weightedMedian(prices: PriceInfo[]): number {
     if (prices.length === 0) {
       throw new Error("Price list cannot be empty.");
     }
