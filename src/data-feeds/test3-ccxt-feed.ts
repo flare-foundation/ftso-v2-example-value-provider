@@ -1,7 +1,7 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
-import { getVotingHistory } from "../utils/mysql";
+import { getVotingHistory, storeSubmittedPrice } from "../utils/mysql";
 import { getBias, setBias, saveBiases, loadBiases } from "../utils/bias-storage";
 
 export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
@@ -18,6 +18,11 @@ export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed);
     const adjustedValue = await this.adjustPrice(result.value, feed);
+
+    // Preis speichern
+    if (this.currentVotingRoundId) {
+      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, Math.floor(Date.now() / 1000));
+    }
 
     this.logger.debug(`Test3: ${feed.name}: Original=${result.value}, Adjusted=${adjustedValue}`);
     return { feed, value: adjustedValue };
@@ -39,9 +44,9 @@ export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const bandMid = (last.first_quartile + last.third_quartile) / 2;
       const deviation = original - bandMid;
 
-      const avgDeviation = history
-        .map(e => e.value - (e.first_quartile + e.third_quartile) / 2)
-        .reduce((a, b) => a + b, 0) / history.length;
+      const avgDeviation =
+        history.map(e => e.value - (e.first_quartile + e.third_quartile) / 2).reduce((a, b) => a + b, 0) /
+        history.length;
 
       const prevBias = getBias(feed.name);
       const updatedBias = prevBias - this.learningRate * avgDeviation;

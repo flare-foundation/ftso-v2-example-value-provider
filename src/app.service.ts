@@ -10,8 +10,9 @@ export class ProviderService {
     return this.dataFeed.getValue(feed);
   }
 
-  async getValues(feeds: FeedId[]): Promise<FeedValueData[]> {
-    return this.dataFeed.getValues(feeds);
+  async getValues(feeds: FeedId[], votingRoundId?: number): Promise<FeedValueData[]> {
+    // 🧠 votingRoundId an DataFeed weiterreichen
+    return this.dataFeed.getValues(feeds, votingRoundId);
   }
 
   async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {

@@ -40,6 +40,38 @@ export async function getVotingHistory(feedName: string, limit = 5): Promise<Vot
     low: parseFloat(row.low),
     high: parseFloat(row.high),
     timestamp: row.timestamp,
-    turnout_bips: row.turnout_bips, // ✅ hinzugefügt
+    turnout_bips: row.turnout_bips,
   }));
 }
+
+export async function storeSubmittedPrice(feedName: string, votingRoundId: number, value: number, timestamp: number): Promise<void> {
+  const sql = `
+    INSERT INTO my_price_submissions (feed_id, voting_round_id, submitted_price, timestamp)
+    VALUES (
+      (SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1),
+      ?, ?, ?
+    )
+    ON DUPLICATE KEY UPDATE
+      submitted_price = VALUES(submitted_price),
+      timestamp = VALUES(timestamp)
+  `;
+
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1`,
+      [feedName]
+    );
+
+    if (rows.length === 0) {
+      console.warn(`⚠️ Kein Feed mit representation='${feedName}' gefunden – Preis wird nicht gespeichert.`);
+      return;
+    }
+
+    await pool.query(sql, [feedName, votingRoundId, value, timestamp]);
+    console.log(`✅ Preis gespeichert: ${feedName} @ ${votingRoundId} = ${value}`);
+  } catch (err) {
+    console.error("❌ Fehler bei storeSubmittedPrice:", err);
+  }
+}
+
+
