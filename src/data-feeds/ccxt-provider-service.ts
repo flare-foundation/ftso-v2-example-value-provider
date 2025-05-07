@@ -2,7 +2,7 @@ import { Logger } from "@nestjs/common";
 import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
+import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { retry, sleepFor } from "../utils/retry";
 import { VolumeStore } from "./volumes";
@@ -54,21 +54,17 @@ export class CcxtFeed implements BaseDataFeed {
   protected readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
   protected lastValidFeedPrice: Map<string, { value: number; time: number }> = new Map();
 
-  private exportFallbackPrices() {
+  private exportFallbackPrices(): void {
     const fallback: Record<string, number> = {};
-
     for (const [key, data] of this.lastValidFeedPrice.entries()) {
-      if (data.value > 0) {
-        fallback[key] = data.value;
-      }
+      if (data.value > 0) fallback[key] = data.value;
     }
-
     const path = join(process.cwd(), "src/config/fallback-prices.json");
     try {
       writeFileSync(path, JSON.stringify(fallback, null, 2));
       this.logger.log(`📦 Fallback-Preise aktualisiert unter ${path}`);
     } catch (e) {
-      this.logger.error(`❌ Fehler beim Schreiben von fallback-prices.json: ${e}`);
+      this.logger.error(`❌ Fehler beim Schreiben von fallback-prices.json:`, e);
     }
   }
 
@@ -77,21 +73,59 @@ export class CcxtFeed implements BaseDataFeed {
     const key = `${feedId.category}-${feedId.name}`;
     const price = await this.getFeedPrice(feedId);
 
-    if (typeof price === "number" && price > 0) {
+    if (price && price > 0) {
       this.lastValidFeedPrice.set(key, { value: price, time: now });
       this.exportFallbackPrices();
       return price;
     }
 
     const fallback = this.lastValidFeedPrice.get(key);
-    if (fallback && now - fallback.time < 5 * 60 * 1000) {
+    if (fallback && now - fallback.time < 5 * 60_000) {
       this.logger.warn(`⚠️ Preis veraltet, verwende alten Wert für ${feedId.name}: ${fallback.value}`);
       return fallback.value;
     }
 
-    const fallbackPrice = 1;
-    this.logger.warn(`❌ Kein gültiger Preis für ${feedId.name}, Rückgabe Defaultwert ${fallbackPrice}`);
-    return fallbackPrice;
+    this.logger.warn(`❌ Kein gültiger Preis für ${feedId.name}, Rückgabe Defaultwert 1`);
+    return 1;
+  }
+  async getValues(feeds: FeedId[]): Promise<FeedValueData[]> {
+    return Promise.all(feeds.map(feed => this.getValue(feed)));
+  }
+
+  async getValue(feed: FeedId): Promise<FeedValueData> {
+    const value = await this.getSafeFeedPrice(feed);
+    return { feed, value };
+  }
+
+  async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
+    let usdtToUsd: number | undefined;
+
+    const convertToUsd = async (price: number) => {
+      if (!usdtToUsd) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
+      return usdtToUsd ? price * usdtToUsd : undefined;
+    };
+
+    const res: FeedVolumeData[] = [];
+    for (const feed of feeds) {
+      const volMap = new Map<string, number>();
+      const baseVolume = this.volumes.get(feed.name);
+
+      baseVolume?.forEach((vol, ex) => volMap.set(ex, vol.getVolume(volumeWindow)));
+
+      if (feed.name.endsWith("/USD")) {
+        const alt = this.volumes.get(feed.name.replace("/USD", "/USDT"));
+        for (const [ex, vol] of alt ?? []) {
+          const usdVol = await convertToUsd(vol.getVolume(volumeWindow));
+          volMap.set(ex, (volMap.get(ex) ?? 0) + (usdVol ?? 0));
+        }
+      }
+
+      res.push({
+        feed,
+        volumes: Array.from(volMap.entries()).map(([exchange, volume]) => ({ exchange, volume: Math.round(volume) })),
+      });
+    }
+    return res;
   }
 
   async start() {
@@ -111,7 +145,7 @@ export class CcxtFeed implements BaseDataFeed {
     this.logger.log(`Initializing exchanges with trade limit ${TRADES_HISTORY_SIZE}`);
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
-        let ExchangeClass: any;
+        let ExchangeClass: new (args: any) => Exchange;
         if (ccxt.pro && ccxt.pro[exchangeName]) {
           ExchangeClass = ccxt.pro[exchangeName];
         } else if (ccxt[exchangeName]) {
@@ -152,67 +186,6 @@ export class CcxtFeed implements BaseDataFeed {
 
     this.initialized = true;
     this.logger.log(`Initialization done, watching trades...`);
-  }
-
-  async getValues(feeds: FeedId[]): Promise<FeedValueData[]> {
-    const promises = feeds.map(feed => this.getValue(feed));
-    return Promise.all(promises);
-  }
-
-  async getValue(feed: FeedId): Promise<FeedValueData> {
-    const price = await this.getSafeFeedPrice(feed);
-    return {
-      feed: feed,
-      value: price,
-    };
-  }
-
-  async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
-    let usdtToUsd: number | undefined;
-
-    const convertToUsd = async (price: number) => {
-      if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
-      if (usdtToUsd === undefined) {
-        this.logger.warn(`Unable to retrieve USDT to USD conversion rate`);
-        return undefined;
-      }
-      return price * usdtToUsd;
-    };
-
-    const res: FeedVolumeData[] = [];
-    for (const feed of feeds) {
-      const volMap = new Map<string, number>();
-
-      const volumeByExchange = this.volumes.get(feed.name);
-      if (volumeByExchange != undefined) {
-        for (const [exchange, volume] of volumeByExchange.entries()) {
-          volMap.set(exchange, volume.getVolume(volumeWindow));
-        }
-      }
-
-      if (feed.name.endsWith("/USD")) {
-        const usdtVolumeByExchange = this.volumes.get(feed.name.replace("/USD", "/USDT"));
-        if (usdtVolumeByExchange != undefined) {
-          for (const [exchange, volume] of usdtVolumeByExchange.entries()) {
-            const usdtVol = volume.getVolume(volumeWindow);
-            const usdVol = (await convertToUsd(usdtVol)) ?? 0;
-            volMap.set(exchange, usdVol + (volMap.get(exchange) || 0));
-          }
-        }
-      }
-
-      res.push(<FeedVolumeData>{
-        feed: feed,
-        volumes: Array.from(volMap.entries()).map(
-          ([exchange, volume]) =>
-            <Volume>{
-              exchange: exchange,
-              volume: Math.round(volume),
-            }
-        ),
-      });
-    }
-    return Promise.resolve(res);
   }
 
   private async initWatchTrades(exchangeToSymbols: Map<string, Set<string>>) {
@@ -384,7 +357,7 @@ export class CcxtFeed implements BaseDataFeed {
       if (exchange == undefined) continue;
       const market = exchange.markets[source.symbol];
       if (market == undefined) continue;
-      this.logger.log(`Fetching last price for ${market.id} on ${source.exchange}`);
+      //this.logger.log(`Fetching last price for ${market.id} on ${source.exchange}`);
       const ticker = await exchange.fetchTicker(market.id);
       if (ticker === undefined) {
         this.logger.warn(`Ticker not found for ${market.id} on ${source.exchange}`);
