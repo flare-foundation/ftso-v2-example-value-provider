@@ -70,7 +70,6 @@ export async function storeSubmittedPrice(
       console.warn(`⚠️ Kein Feed mit representation='${feedName}' gefunden – Preis wird nicht gespeichert.`);
       return;
     }
-
     await pool.query(sql, [feedName, votingRoundId, value, timestamp]);
   } catch (err) {
     console.error("❌ Fehler bei storeSubmittedPrice:", err);
