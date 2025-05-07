@@ -4,16 +4,14 @@ import { CcxtFeed } from "./ccxt-provider-service";
 
 export class Test2CcxtFeed extends CcxtFeed implements BaseDataFeed {
   constructor() {
-    super(); // nutzt dieselbe Konfiguration wie CcxtFeed
+    super();
   }
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed);
-
-    // 👇 hier kannst du feinjustieren
     const adjustedValue = this.adjustPrice(result.value, feed);
 
-    this.logger.debug(`Test1: Originalwert für ${feed.name}: ${result.value}, angepasst: ${adjustedValue}`);
+    this.logger.debug(`🔧 Feed ${feed.name}: Original=${result.value}, Adjusted=${adjustedValue}`);
 
     return {
       feed,
@@ -30,15 +28,64 @@ export class Test2CcxtFeed extends CcxtFeed implements BaseDataFeed {
   }
 
   /**
-   * 🔧 Hier kannst du alle Anpassungen vornehmen.
-   * Aktuell: kleine positive Verschiebung von 0.01 %
+   * Adaptive Preis-Anpassung:
+   * - Trend (steigend = leicht höherer Preis)
+   * - Volumen (hohes Volumen = leicht aggressiver)
+   * - Zufall zur Streuung
    */
   private adjustPrice(original: number, feed: FeedId): number {
-    // Beispiel: kleine lineare Korrektur je nach Symbol
-    if (feed.name === "BTC/USD") {
-      return original * 1.00001; // +0.001 %
+    const trend = this.estimateTrend(feed.name);
+    const volumeBias = this.getVolumeBias(feed.name);
+    const noise = (Math.random() - 0.5) * 0.00005; // ±0.0025%
+
+    const combinedBias = 1 + trend * 0.5 + volumeBias + noise;
+
+    const adjusted = original * combinedBias;
+
+    this.logger.debug(
+      `📊 Anpassung für ${feed.name}: trend=${trend.toFixed(5)}, volumeBias=${volumeBias.toFixed(
+        5
+      )}, noise=${noise.toFixed(5)}, bias=${(combinedBias - 1).toFixed(5)}`
+    );
+
+    return adjusted;
+  }
+
+  /**
+   * Trendbasierte Anpassung (Veränderung über Zeit)
+   */
+  private estimateTrend(symbol: string): number {
+    const prices = this.latestPrice.get(symbol);
+    if (!prices) return 0;
+
+    const sorted = Array.from(prices.values())
+      .map(p => ({ time: p.time, value: p.value }))
+      .sort((a, b) => a.time - b.time);
+
+    if (sorted.length < 2) return 0;
+
+    const oldest = sorted[0];
+    const latest = sorted.at(-1)!;
+    const change = (latest.value - oldest.value) / oldest.value;
+
+    return change; // z.B. 0.001 = +0.1 %
+  }
+
+  /**
+   * Volumenabhängige Bias-Anpassung
+   */
+  private getVolumeBias(symbol: string): number {
+    const exchangeVolumes = this.volumes.get(symbol);
+    if (!exchangeVolumes) return 0;
+
+    let totalVolume = 0;
+    for (const vol of exchangeVolumes.values()) {
+      totalVolume += vol.getVolume(60); // letzte 60 Sekunden
     }
 
-    return original; // Default: keine Änderung
+    // Volumen-Schwellenwert für aggressiveres Verhalten
+    if (totalVolume > 50000) return -0.00003; // bei hohem Volumen minimal tiefer anbieten
+
+    return 0;
   }
 }
