@@ -44,6 +44,16 @@ export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const bandMid = (last.first_quartile + last.third_quartile) / 2;
       const deviation = original - bandMid;
 
+      // 👉 Analyse des letzten abgegebenen Preises
+      const lastSubmitted = last.submitted_price;
+      let submittedError = 0;
+      if (lastSubmitted !== undefined && lastSubmitted !== null) {
+        const withinBand = lastSubmitted >= last.first_quartile && lastSubmitted <= last.third_quartile;
+        submittedError = (lastSubmitted - bandMid) / bandMid;
+        this.logger.debug(`🧠 Letzte Abgabe war ${withinBand ? "✅ im Band" : "❌ außerhalb"}: Fehler=${submittedError.toFixed(6)}`);
+      }
+
+      // 👉 Bias-Anpassung basierend auf History
       const avgDeviation =
         history.map(e => e.value - (e.first_quartile + e.third_quartile) / 2).reduce((a, b) => a + b, 0) /
         history.length;
@@ -51,18 +61,19 @@ export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const prevBias = getBias(feed.name);
       const updatedBias = prevBias - this.learningRate * avgDeviation;
 
-      // Bias begrenzen auf ±10 % vom Originalpreis
       const maxBias = original * 0.1;
       const boundedBias = Math.max(Math.min(updatedBias, maxBias), -maxBias);
 
       setBias(feed.name, boundedBias);
 
-      const corrected = original - deviation * 0.5 + boundedBias;
+      // 👉 Anpassung mit korrigierter Gewichtung (bspw. aggressiver, wenn man daneben lag)
+      const correctionFactor = 1 + Math.min(Math.abs(submittedError), 0.1); // Max. Korrektur durch Historie
+      const corrected = original - deviation * 0.5 * correctionFactor + boundedBias;
 
       this.logger.debug(
         `📈 Runde ${this.currentVotingRoundId ?? "?"} ${feed.name} | ` +
-        `Orig=${original}, BandMid=${bandMid.toFixed(8)}, Deviation=${deviation.toFixed(8)}, ` +
-        `Bias=${boundedBias.toFixed(8)}, New=${corrected.toFixed(8)}`
+          `Orig=${original}, BandMid=${bandMid.toFixed(8)}, Deviation=${deviation.toFixed(8)}, ` +
+          `Bias=${boundedBias.toFixed(8)}, CorrFactor=${correctionFactor.toFixed(2)}, New=${corrected.toFixed(8)}`
       );
 
       return corrected;
