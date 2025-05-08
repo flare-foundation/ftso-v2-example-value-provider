@@ -25,13 +25,14 @@ export interface VotingEntry {
 export async function getVotingHistory(feedName: string, limit = 5): Promise<VotingEntry[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT p.voting_round_id, p.value, p.first_quartile, p.third_quartile,
-            p.low, p.high, p.timestamp, p.turnout_bips, s.submitted_price
-     FROM ftso_prices p
-     JOIN ftso_feeds f ON f.id = p.feed_id
-     LEFT JOIN price_submissions s ON s.feed_id = p.feed_id AND s.voting_round_id = p.voting_round_id
-     WHERE f.feed_name = ?
-     ORDER BY p.voting_round_id DESC
-     LIMIT ?`,
+          p.low, p.high, r.timestamp, p.turnout_bips, s.submitted_price
+   FROM ftso_prices p
+   JOIN voting_rounds r ON r.id = p.voting_round_id
+   JOIN ftso_feeds f ON f.id = p.feed_id
+   LEFT JOIN price_submissions s ON s.feed_id = p.feed_id AND s.voting_round_id = p.voting_round_id
+   WHERE f.feed_name = ?
+   ORDER BY p.voting_round_id DESC
+   LIMIT ?`,
     [feedName, limit]
   );
 
