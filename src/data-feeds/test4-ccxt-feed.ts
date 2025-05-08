@@ -5,13 +5,13 @@ import { getVotingHistory, storeSubmittedPrice } from "../utils/mysql";
 
 export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;
+
   async getValue(feed: FeedId): Promise<FeedValueData> {
-    const result = await super.getValue(feed);
+    const result = await super.getValue(feed); // result.value = original (ccxt)
     const adjustedValue = await this.adjustPrice(result.value, feed);
 
-    // ✅ Preis in DB speichern, falls VotingRound gesetzt ist
     if (this.currentVotingRoundId) {
-      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, Math.floor(Date.now() / 1000));
+      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, result.value); // <-- original mitgeben
     }
 
     this.logger.debug(`Test4: ${feed.name} | Original=${result.value}, Adjusted=${adjustedValue}`);

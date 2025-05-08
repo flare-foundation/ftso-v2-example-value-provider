@@ -44,36 +44,43 @@ export async function getVotingHistory(feedName: string, limit = 5): Promise<Vot
     high: parseFloat(row.high),
     timestamp: row.timestamp,
     turnout_bips: row.turnout_bips,
-    submitted_price: row.submitted_price !== null ? parseFloat(row.submitted_price) : null
+    submitted_price: row.submitted_price !== null ? parseFloat(row.submitted_price) : null,
   }));
 }
 
 export async function storeSubmittedPrice(
   feedName: string,
   votingRoundId: number,
-  value: number,
-  timestamp: number
+  submitted: number,
+  ccxt: number
 ): Promise<void> {
-  const sql = `
-    INSERT INTO my_price_submissions (feed_id, voting_round_id, submitted_price, timestamp)
-    VALUES ((SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1), ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      submitted_price = VALUES(submitted_price),
-      timestamp = VALUES(timestamp)
-  `;
+  const submittedScaled = Math.round(submitted * 1e8);
+  const ccxtScaled = Math.round(ccxt * 1e8);
 
   try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1`,
-      [feedName]
-    );
+    const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1`, [
+      feedName,
+    ]);
 
     if (rows.length === 0) {
       console.warn(`⚠️ Kein Feed mit representation='${feedName}' gefunden – Preis wird nicht gespeichert.`);
       return;
     }
 
-    await pool.query(sql, [feedName, votingRoundId, value, timestamp]);
+    const feedId = rows[0].id;
+
+    // Voting-Runde eintragen, falls noch nicht vorhanden (timestamp wird später ergänzt)
+    await pool.query(`INSERT IGNORE INTO voting_rounds (id) VALUES (?)`, [votingRoundId]);
+
+    // Preisabgabe + ccxt-Preis speichern
+    await pool.query(
+      `INSERT INTO price_submissions (feed_id, voting_round_id, submitted_price, ccxt_price)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         submitted_price = VALUES(submitted_price),
+         ccxt_price = VALUES(ccxt_price)`,
+      [feedId, votingRoundId, submittedScaled, ccxtScaled]
+    );
   } catch (err) {
     console.error("❌ Fehler bei storeSubmittedPrice:", err);
   }
