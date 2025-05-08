@@ -20,6 +20,15 @@ export interface VotingEntry {
   timestamp: number;
   turnout_bips: number;
   submitted_price: number | null;
+  decimals?: number;
+}
+
+export async function getFeedDecimals(feedName: string): Promise<number | null> {
+  const [rows] = await pool.query<RowDataPacket[]>(`SELECT decimals FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
+    feedName,
+  ]);
+
+  return rows.length > 0 ? rows[0].decimals : null;
 }
 
 export async function getVotingHistory(feedName: string, limit = 5): Promise<VotingEntry[]> {
@@ -55,9 +64,6 @@ export async function storeSubmittedPrice(
   submitted: number,
   ccxt: number
 ): Promise<void> {
-  const submittedScaled = Math.round(submitted * 1e8);
-  const ccxtScaled = Math.round(ccxt * 1e8);
-
   try {
     const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
       feedName,
@@ -70,10 +76,16 @@ export async function storeSubmittedPrice(
 
     const feedId = rows[0].id;
 
-    // Voting-Runde eintragen, falls noch nicht vorhanden (timestamp wird später ergänzt)
+    const scale = 1e8; // FIXED scale to match ftso_prices
+    const submittedScaled = Math.round(submitted * scale);
+    const ccxtScaled = Math.round(ccxt * scale);
+
+    console.debug(
+      `📦 Speichere Preis (1e8): submitted=${submitted} → ${submittedScaled}, ccxt=${ccxt} → ${ccxtScaled}`
+    );
+
     await pool.query(`INSERT IGNORE INTO voting_rounds (id) VALUES (?)`, [votingRoundId]);
 
-    // Preisabgabe + ccxt-Preis speichern
     await pool.query(
       `INSERT INTO price_submissions (feed_id, voting_round_id, submitted_price, ccxt_price)
        VALUES (?, ?, ?, ?)
