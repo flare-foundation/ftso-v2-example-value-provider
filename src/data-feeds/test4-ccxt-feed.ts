@@ -1,12 +1,18 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
-import { getVotingHistory } from "../utils/mysql";
+import { getVotingHistory, storeSubmittedPrice } from "../utils/mysql";
 
 export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
+  private currentVotingRoundId?: number;
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed);
     const adjustedValue = await this.adjustPrice(result.value, feed);
+
+    // ✅ Preis in DB speichern, falls VotingRound gesetzt ist
+    if (this.currentVotingRoundId) {
+      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, Math.floor(Date.now() / 1000));
+    }
 
     this.logger.debug(`Test4: ${feed.name} | Original=${result.value}, Adjusted=${adjustedValue}`);
 
