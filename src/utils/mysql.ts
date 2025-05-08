@@ -59,12 +59,12 @@ export async function storeSubmittedPrice(
   const ccxtScaled = Math.round(ccxt * 1e8);
 
   try {
-    const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE representation = ? LIMIT 1`, [
+    const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
       feedName,
     ]);
 
     if (rows.length === 0) {
-      console.warn(`⚠️ Kein Feed mit representation='${feedName}' gefunden – Preis wird nicht gespeichert.`);
+      console.warn(`⚠️ Kein Feed mit feed_name='${feedName}' gefunden – Preis wird nicht gespeichert.`);
       return;
     }
 

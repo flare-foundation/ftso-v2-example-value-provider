@@ -7,14 +7,20 @@ export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
-    const result = await super.getValue(feed); // result.value = original (ccxt)
+    const result = await super.getValue(feed); // ccxt price
     const adjustedValue = await this.adjustPrice(result.value, feed);
 
-    if (this.currentVotingRoundId) {
-      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, result.value); // <-- original mitgeben
-    }
+    this.logger.debug(`📝 ${feed.name}: Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
 
-    this.logger.debug(`Test4: ${feed.name} | Original=${result.value}, Adjusted=${adjustedValue}`);
+    if (this.currentVotingRoundId) {
+      this.logger.debug(
+        `📤 Speichere Preisabgabe: Feed=${feed.name}, Round=${this.currentVotingRoundId}, ` +
+          `Submitted=${adjustedValue}, CCXT=${result.value}`
+      );
+      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, adjustedValue, result.value);
+    } else {
+      this.logger.warn(`⚠️ ${feed.name}: Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
+    }
 
     return {
       feed,
@@ -22,7 +28,12 @@ export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
     };
   }
 
-  async getValues(feeds: FeedId[]): Promise<FeedValueData[]> {
+  async getValues(feeds: FeedId[], votingRoundId?: number): Promise<FeedValueData[]> {
+    if (votingRoundId !== undefined) {
+      this.logger.debug(`🆔 Setze VotingRoundId auf ${votingRoundId}`);
+      this.currentVotingRoundId = votingRoundId;
+    }
+
     return Promise.all(feeds.map(feed => this.getValue(feed)));
   }
 
@@ -32,23 +43,24 @@ export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   private async adjustPrice(original: number, feed: FeedId): Promise<number> {
     try {
-      const history = await getVotingHistory(feed.name, 1);
-      if (history.length === 0) return original;
+      //const history = await getVotingHistory(feed.name, 1);
+      //if (history.length === 0) return original;
 
-      const { first_quartile, third_quartile } = history[0];
-      const bandMid = (first_quartile + third_quartile) / 2;
+      //const { first_quartile, third_quartile } = history[0];
+      //const bandMid = (first_quartile + third_quartile) / 2;
 
-      const deviation = original - bandMid;
+      //const original_scaled = Math.round(original * 1e8);
 
-      // Sanfte Rückführung Richtung Band-Mitte
-      const corrected = original - deviation * 0.6;
+      //const deviation = original_scaled - bandMid;
+      //const corrected = original_scaled - deviation * 0.6;
 
-      this.logger.debug(
-        `🎯 ${feed.name} Band [${first_quartile}, ${third_quartile}], ` +
-          `Mid=${bandMid.toFixed(8)}, Orig=${original}, Corr=${corrected.toFixed(8)}`
-      );
+      //this.logger.debug(
+      //  `🎯 ${feed.name} Band [${first_quartile}, ${third_quartile}], ` +
+      //    `Mid=${bandMid.toFixed(0)}, Orig=${original_scaled}, Corr=${corrected.toFixed(0)}`
+      //);
 
-      return corrected;
+      //return corrected;
+      return original;
     } catch (err) {
       this.logger.error(`❌ Fehler in adjustPrice(${feed.name}):`, err);
       return original;
