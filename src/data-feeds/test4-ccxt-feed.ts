@@ -1,19 +1,14 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
+import { getVotingHistory } from "../utils/mysql";
 
 export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
-  constructor() {
-    super(); // nutzt dieselbe Konfiguration wie CcxtFeed
-  }
-
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed);
+    const adjustedValue = await this.adjustPrice(result.value, feed);
 
-    // 👇 hier kannst du feinjustieren
-    const adjustedValue = this.adjustPrice(result.value, feed);
-
-    this.logger.debug(`Test1: Originalwert für ${feed.name}: ${result.value}, angepasst: ${adjustedValue}`);
+    this.logger.debug(`Test4: ${feed.name} | Original=${result.value}, Adjusted=${adjustedValue}`);
 
     return {
       feed,
@@ -29,16 +24,28 @@ export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
     return super.getVolumes(feeds, window);
   }
 
-  /**
-   * 🔧 Hier kannst du alle Anpassungen vornehmen.
-   * Aktuell: kleine positive Verschiebung von 0.01 %
-   */
-  private adjustPrice(original: number, feed: FeedId): number {
-    // Beispiel: kleine lineare Korrektur je nach Symbol
-    if (feed.name === "BTC/USD") {
-      return original * 1.00001; // +0.001 %
-    }
+  private async adjustPrice(original: number, feed: FeedId): Promise<number> {
+    try {
+      const history = await getVotingHistory(feed.name, 1);
+      if (history.length === 0) return original;
 
-    return original; // Default: keine Änderung
+      const { first_quartile, third_quartile } = history[0];
+      const bandMid = (first_quartile + third_quartile) / 2;
+
+      const deviation = original - bandMid;
+
+      // Sanfte Rückführung Richtung Band-Mitte
+      const corrected = original - deviation * 0.6;
+
+      this.logger.debug(
+        `🎯 ${feed.name} Band [${first_quartile}, ${third_quartile}], ` +
+          `Mid=${bandMid.toFixed(8)}, Orig=${original}, Corr=${corrected.toFixed(8)}`
+      );
+
+      return corrected;
+    } catch (err) {
+      this.logger.error(`❌ Fehler in adjustPrice(${feed.name}):`, err);
+      return original;
+    }
   }
 }
