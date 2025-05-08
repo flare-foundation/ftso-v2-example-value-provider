@@ -2,6 +2,7 @@
 /dist
 /node_modules
 /build
+package-lock.json
 
 # Logs
 logs
@@ -51,6 +52,10 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# configs
+/config/bias-cache.json
+/config/fallback-prices.json
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
