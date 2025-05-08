@@ -28,8 +28,8 @@ export async function getVotingHistory(feedName: string, limit = 5): Promise<Vot
             p.low, p.high, p.timestamp, p.turnout_bips, s.submitted_price
      FROM ftso_prices p
      JOIN ftso_feeds f ON f.id = p.feed_id
-     LEFT JOIN my_price_submissions s ON s.feed_id = p.feed_id AND s.voting_round_id = p.voting_round_id
-     WHERE f.representation = ?
+     LEFT JOIN price_submissions s ON s.feed_id = p.feed_id AND s.voting_round_id = p.voting_round_id
+     WHERE f.feed_name = ?
      ORDER BY p.voting_round_id DESC
      LIMIT ?`,
     [feedName, limit]
