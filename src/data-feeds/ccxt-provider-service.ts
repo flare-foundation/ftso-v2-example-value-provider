@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common";
-import ccxt, { Exchange, Trade } from "ccxt";
+import * as ccxt from "ccxt";
+import type { Exchange, Trade } from "ccxt";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
@@ -35,8 +36,17 @@ type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
 const CONFIG_PATH = "src/config/";
 const RETRY_BACKOFF_MS = 10_000;
 
+const PING_INTERVALS: Record<string, number> = {
+  bybit: 20000,
+  binance: 30000,
+  kucoin: 30000,
+  okx: 25000,
+  gate: 30000,
+};
+
 // Parameter for exponential decay in time-weighted median price calculation
 const LAMBDA = process.env.MEDIAN_DECAY ? parseFloat(process.env.MEDIAN_DECAY) : 0.00005;
+const PRICE_TTL_MS = process.env.PRICE_TTL_MS ? parseFloat(process.env.PRICE_TTL_MS) : 1800000;
 const TRADES_HISTORY_SIZE = process.env.TRADES_HISTORY_SIZE ? parseInt(process.env.TRADES_HISTORY_SIZE) : 1000; // 1000 is default in ccxt
 
 const usdtToUsdFeedId: FeedId = { category: FeedCategory.Crypto.valueOf(), name: "USDT/USD" };
@@ -53,6 +63,9 @@ export class CcxtFeed implements BaseDataFeed {
   /** Symbol -> exchange -> volume */
   protected readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
   protected lastValidFeedPrice: Map<string, { value: number; time: number }> = new Map();
+
+  protected readonly trendExchanges = new Map<string, ccxt.Exchange>();
+  protected readonly trendMarketsLoaded = new Set<string>();
 
   private exportFallbackPrices(): void {
     const fallback: Record<string, number> = {};
@@ -140,9 +153,7 @@ export class CcxtFeed implements BaseDataFeed {
       }
     }
 
-    this.logger.log(`Connecting to exchanges: ${JSON.stringify(Array.from(exchangeToSymbols.keys()))}`);
     const loadExchanges = [];
-    this.logger.log(`Initializing exchanges with trade limit ${TRADES_HISTORY_SIZE}`);
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
         let ExchangeClass: new (args: any) => Exchange;
@@ -162,6 +173,7 @@ export class CcxtFeed implements BaseDataFeed {
           this.logger.warn(`Failed to instantiate exchange ${exchangeName}, ignoring: ${e}`);
           continue;
         }
+
         exchange.options["tradesLimit"] = TRADES_HISTORY_SIZE;
         this.exchangeByName.set(exchangeName, exchange);
         loadExchanges.push([exchangeName, retry(async () => exchange.loadMarkets(), 2, RETRY_BACKOFF_MS, this.logger)]);
@@ -175,15 +187,59 @@ export class CcxtFeed implements BaseDataFeed {
       try {
         this.logger.log(`Initializing exchange ${exchangeName}`);
         await loadExchange;
-        this.logger.log(`Exchange ${exchangeName} initialized`);
+
+        const exchange = this.exchangeByName.get(exchangeName);
+        if (!exchange) continue;
+
+        // ⬇️ Nur wenn nicht schon gesetzt (falls mehrfach aufgerufen)
+        if (!this.trendExchanges.has(exchangeName)) {
+          this.trendExchanges.set(exchangeName, exchange);
+        }
+
+        // Lade Marktinfos für Trend-Feeds
+        const trendSymbols = this.config
+          .flatMap(feed => feed.sources)
+          .filter(source => source.exchange === exchangeName)
+          .map(source => source.symbol);
+
+        for (const symbol of trendSymbols) {
+          const key = `${exchangeName}:${symbol}`;
+          if (!this.trendMarketsLoaded.has(key)) {
+            await exchange.loadMarkets(); // wird meist bereits gecached sein intern
+            if (exchange.markets?.[symbol]) {
+              this.trendMarketsLoaded.add(key);
+              this.logger.debug(`✅ Trend-Markt vorgeladen: ${key}`);
+            } else {
+              this.logger.warn(`⚠️ Symbol ${symbol} nicht gefunden in ${exchangeName}`);
+            }
+          }
+        }
       } catch (e) {
         this.logger.warn(`Failed to load markets for ${exchangeName}, ignoring: ${e}`);
         exchangeToSymbols.delete(exchangeName);
       }
     }
 
-    await this.initWatchTrades(exchangeToSymbols);
+    for (const [exchangeName, exchange] of this.exchangeByName.entries()) {
+      const pingFn = (exchange as any).ping;
+      const interval = PING_INTERVALS[exchangeName] ?? 30000;
 
+      if (typeof pingFn === "function") {
+        this.logger.log(`🔄 Setting up ping for ${exchangeName} every ${interval / 1000}s`);
+        setInterval(async () => {
+          try {
+            const maybePromise = pingFn.call(exchange);
+            if (maybePromise instanceof Promise) {
+              await maybePromise;
+            }
+          } catch (err: any) {
+            this.logger.warn(`❌ Ping to ${exchangeName} failed: ${err.message ?? err}`);
+          }
+        }, interval);
+      }
+    }
+
+    await this.initWatchTrades(exchangeToSymbols);
     this.initialized = true;
     this.logger.log(`Initialization done, watching trades...`);
   }
@@ -241,7 +297,14 @@ export class CcxtFeed implements BaseDataFeed {
         this.processVolume(exchange.id, lastTrade.symbol, newTrades);
       } catch (e) {
         const error = asError(e);
-        this.logger.debug(`Failed to watch trades for ${exchange.id}/${marketIds}: ${error}, will retry`);
+        const message = error?.message || "";
+
+        if (message.includes("code 1006")) {
+          this.logger.verbose(`🔌 WebSocket closed (1006) for ${exchange.id}/${marketIds}, will retry`);
+        } else {
+          this.logger.warn(`❗ Failed to watch trades for ${exchange.id}/${marketIds}: ${message}`);
+        }
+
         await sleepFor(10_000);
       }
     }
@@ -293,13 +356,26 @@ export class CcxtFeed implements BaseDataFeed {
     });
     this.latestPrice.set(symbol, prices);
   }
-
+  private purgeStalePrices(ttlMs: number) {
+    const now = Date.now();
+    this.latestPrice.forEach((exMap, symbol) => {
+      exMap.forEach((info, exchange) => {
+        if (now - info.time > ttlMs) {
+          exMap.delete(exchange);
+        }
+      });
+      if (exMap.size === 0) this.latestPrice.delete(symbol);
+    });
+  }
   protected async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
     const config = this.config.find(config => feedsEqual(config.feed, feedId));
     if (!config) {
       this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
       return undefined;
     }
+
+    // ⬇️ Cleanup
+    this.purgeStalePrices(PRICE_TTL_MS);
 
     let usdtToUsd: number | undefined;
 
@@ -314,18 +390,14 @@ export class CcxtFeed implements BaseDataFeed {
 
     const prices: PriceInfo[] = [];
 
-    // Gather all available prices
     for (const source of config.sources) {
       const info = this.latestPrice.get(source.symbol)?.get(source.exchange);
-      // Skip if no price information is available
       if (!info) continue;
 
       let price = info.value;
-
       price = source.symbol.endsWith("USDT") ? await convertToUsd(source.symbol, source.exchange, price) : price;
       if (price === undefined) continue;
 
-      // Add the price to our list for median calculation
       prices.push({
         ...info,
         value: price,
@@ -334,7 +406,6 @@ export class CcxtFeed implements BaseDataFeed {
 
     if (prices.length === 0) {
       this.logger.warn(`No prices found for ${JSON.stringify(feedId)}`);
-      // Attempt to fetch last known price from exchanges. Don't block on this request - data will be available later on re-query.
       void this.fetchLastPrices(config);
       return undefined;
     }
@@ -459,4 +530,59 @@ export class CcxtFeed implements BaseDataFeed {
 
 function feedsEqual(a: FeedId, b: FeedId): boolean {
   return a.category === b.category && a.name === b.name;
+}
+
+async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) {
+  const proExchanges = [
+    "bybit",
+    "cryptocom",
+    "gate",
+    "htx",
+    "kucoin",
+    "okx",
+    "bitstamp",
+    "kraken",
+    "bitget",
+    "binance",
+    "coinbase",
+    "bingx",
+    "bitfinex",
+    "mexc",
+    "binanceus",
+    "bitmart",
+    "ascendex",
+    "probit",
+  ];
+
+  // Map aus aktiven sources (exchange+symbol)
+  const activeSources = new Set(feeds.flatMap(feed => feed.sources.map(s => `${s.exchange}::${s.symbol}`)));
+
+  // Alle symboile aus feeds.json
+  const allSymbols = Array.from(new Set(feeds.flatMap(feed => feed.sources.map(s => s.symbol))));
+
+  for (const exchangeId of proExchanges) {
+    try {
+      const ExchangeClass = (ccxt as any)[exchangeId];
+      if (typeof ExchangeClass !== "function") continue;
+
+      const exchange = new ExchangeClass({ enableRateLimit: true });
+      const markets = await exchange.loadMarkets();
+      const supportedSymbols = Object.keys(markets);
+
+      const matched = allSymbols.filter(sym => supportedSymbols.includes(sym));
+
+      if (matched.length > 0) {
+        const annotated = matched.map(sym => {
+          const key = `${exchangeId}::${sym}`;
+          return activeSources.has(key) ? `🟢 ${sym}` : `🔘 ${sym}`;
+        });
+
+        logger.debug(`✅ ${exchangeId} supports:\n${annotated.join("\n")}`);
+      } else {
+        logger.debug(`❌ ${exchangeId} supports none of your configured symbols`);
+      }
+    } catch (e) {
+      logger.debug(`⚠️ ${exchangeId} skipped: ${(e as Error).message}`);
+    }
+  }
 }

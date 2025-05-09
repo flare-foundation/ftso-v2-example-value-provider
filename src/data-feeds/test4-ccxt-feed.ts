@@ -79,7 +79,7 @@ export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
           `     Final        = ${corrected}`
       );
 
-      return corrected;
+      return original;
     } catch (err) {
       this.logger.error(`❌ Fehler in adjustPrice(${feed.name}):`, err);
       return original;

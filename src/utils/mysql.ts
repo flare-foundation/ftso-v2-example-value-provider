@@ -23,6 +23,47 @@ export interface VotingEntry {
   decimals?: number;
 }
 
+export type PriceHistoryEntry = {
+  voting_round_id: number;
+  ccxt_price: number;
+  submitted: number;
+  ftso_value: number;
+  decimals: number;
+};
+
+export async function getFeedId(feedName: string): Promise<number | undefined> {
+  const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [feedName]);
+  return rows.length > 0 ? rows[0].id : undefined;
+}
+
+export async function getPriceHistory(feedId: number, limit = 30): Promise<PriceHistoryEntry[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
+    SELECT 
+      ps.voting_round_id,
+      ps.ccxt_price,
+      ps.submitted_price AS submitted,
+      fp.value AS ftso_value,
+      ff.decimals
+    FROM price_submissions ps
+    JOIN ftso_prices fp ON ps.feed_id = fp.feed_id AND ps.voting_round_id = fp.voting_round_id
+    JOIN ftso_feeds ff ON ps.feed_id = ff.id
+    WHERE ps.feed_id = ?
+    ORDER BY ps.voting_round_id DESC
+    LIMIT ?
+  `,
+    [feedId, limit]
+  );
+
+  return rows.map(r => ({
+    voting_round_id: Number(r.voting_round_id),
+    ccxt_price: Number(r.ccxt_price) / 1e8,
+    submitted: Number(r.submitted) / 1e8,
+    ftso_value: Number(r.ftso_value) / 10 ** r.decimals,
+    decimals: r.decimals,
+  }));
+}
+
 export async function getFeedDecimals(feedName: string): Promise<number | null> {
   const [rows] = await pool.query<RowDataPacket[]>(`SELECT decimals FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
     feedName,
