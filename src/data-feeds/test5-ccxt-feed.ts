@@ -1,7 +1,7 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
-import { getFeedDecimals, getPriceHistory, getFeedId } from "../utils/mysql";
+import { getFeedDecimals, storeSubmittedPrice, getPriceHistory, getFeedId } from "../utils/mysql";
 import * as ccxt from "ccxt";
 
 export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
@@ -30,7 +30,7 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     CCXT Raw      = ${result.value} (scaled=${ccxtScaled})\n` +
             `     Decimals      = ${decimals}`
         );
-      //await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
+      await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
     }
