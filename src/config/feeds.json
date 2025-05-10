@@ -496,19 +496,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "MATIC/USD" },
-    "config": {
-      "outlierThresholdPercent": 0.5,
-      "useVolumeWeighting": true
-    },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "MATIC/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "POL/USD" },
     "config": {
       "outlierThresholdPercent": 0.5,
@@ -1003,61 +990,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "INJ/USD" },
-    "config": {
-      "outlierThresholdPercent": 0.5,
-      "useVolumeWeighting": true
-    },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "INJ/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "INJ/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "INJ/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "INJ/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "INJ/USDT"
-      },
-      {
-        "exchange": "kucoin",
-        "symbol": "INJ/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "INJ/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 2, "name": "EUR/USD" },
-    "config": {
-      "outlierThresholdPercent": 0.5,
-      "useVolumeWeighting": true
-    },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "EUR/USDT"
-      },
-
-      {
-        "exchange": "cryptocom",
-        "symbol": "EUR/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "TRX/USD" },
     "config": {
       "outlierThresholdPercent": 0.5,
@@ -1157,10 +1089,6 @@
       },
       {
         "exchange": "bitget",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
         "symbol": "DAI/USDT"
       },
       {
@@ -1680,19 +1608,6 @@
       {
         "exchange": "bybit",
         "symbol": "AAVE/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "FTM/USD" },
-    "config": {
-      "outlierThresholdPercent": 0.5,
-      "useVolumeWeighting": true
-    },
-    "sources": [
-      {
-        "exchange": "kraken",
-        "symbol": "FTM/USD"
       }
     ]
   },

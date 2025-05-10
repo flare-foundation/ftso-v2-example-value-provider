@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
 import * as ccxt from "ccxt";
-import type { Exchange, Trade } from "ccxt";
+import type { Exchange, Trade, Market } from "ccxt";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
@@ -144,7 +144,10 @@ export class CcxtFeed implements BaseDataFeed {
   async start() {
     this.config = this.loadConfig();
     const exchangeToSymbols = new Map<string, Set<string>>();
-
+    if (process.env.DEBUG_ALL_EXCHANGES === "true") {
+      await logSupportedMarketsForFeeds(this.config, this.logger);
+      //await logMarketsForExchanges();
+    }
     for (const feed of this.config) {
       for (const source of feed.sources) {
         const symbols = exchangeToSymbols.get(source.exchange) || new Set();
@@ -183,43 +186,6 @@ export class CcxtFeed implements BaseDataFeed {
       }
     }
 
-    for (const [exchangeName, loadExchange] of loadExchanges) {
-      try {
-        this.logger.log(`Initializing exchange ${exchangeName}`);
-        await loadExchange;
-
-        const exchange = this.exchangeByName.get(exchangeName);
-        if (!exchange) continue;
-
-        // ⬇️ Nur wenn nicht schon gesetzt (falls mehrfach aufgerufen)
-        if (!this.trendExchanges.has(exchangeName)) {
-          this.trendExchanges.set(exchangeName, exchange);
-        }
-
-        // Lade Marktinfos für Trend-Feeds
-        const trendSymbols = this.config
-          .flatMap(feed => feed.sources)
-          .filter(source => source.exchange === exchangeName)
-          .map(source => source.symbol);
-
-        for (const symbol of trendSymbols) {
-          const key = `${exchangeName}:${symbol}`;
-          if (!this.trendMarketsLoaded.has(key)) {
-            await exchange.loadMarkets(); // wird meist bereits gecached sein intern
-            if (exchange.markets?.[symbol]) {
-              this.trendMarketsLoaded.add(key);
-              this.logger.debug(`✅ Trend-Markt vorgeladen: ${key}`);
-            } else {
-              this.logger.warn(`⚠️ Symbol ${symbol} nicht gefunden in ${exchangeName}`);
-            }
-          }
-        }
-      } catch (e) {
-        this.logger.warn(`Failed to load markets for ${exchangeName}, ignoring: ${e}`);
-        exchangeToSymbols.delete(exchangeName);
-      }
-    }
-
     for (const [exchangeName, exchange] of this.exchangeByName.entries()) {
       const pingFn = (exchange as any).ping;
       const interval = PING_INTERVALS[exchangeName] ?? 30000;
@@ -244,15 +210,24 @@ export class CcxtFeed implements BaseDataFeed {
     this.logger.log(`Initialization done, watching trades...`);
   }
 
+  private async ensureMarketsLoaded(exchange: Exchange): Promise<void> {
+    if (!exchange.markets || Object.keys(exchange.markets).length === 0) {
+      await exchange.loadMarkets();
+    }
+  }
+
   private async initWatchTrades(exchangeToSymbols: Map<string, Set<string>>) {
     for (const [exchangeName, symbols] of exchangeToSymbols) {
       const exchange = this.exchangeByName.get(exchangeName);
       if (exchange === undefined) continue;
 
+      // 🛠️ neu: sicherstellen, dass Märkte geladen sind
+      await this.ensureMarketsLoaded(exchange);
+
       const marketIds: string[] = [];
       for (const symbol of symbols) {
-        const market = exchange.markets[symbol];
-        if (market === undefined) {
+        const market = exchange.markets?.[symbol];
+        if (!market) {
           this.logger.warn(`Market not found for ${symbol} on ${exchangeName}`);
           continue;
         }
@@ -532,19 +507,46 @@ function feedsEqual(a: FeedId, b: FeedId): boolean {
   return a.category === b.category && a.name === b.name;
 }
 
+const exchangesToCheck = ["binance", "coinbase", "bitfinex"];
+
+async function logMarketsForExchanges() {
+  for (const exchangeId of exchangesToCheck) {
+    const ExchangeClass = (ccxt as any)[exchangeId];
+    if (typeof ExchangeClass !== "function") {
+      console.warn(`❌ Exchange ${exchangeId} ist kein gültiger Konstruktor.`);
+      continue;
+    }
+
+    const exchange = new ExchangeClass({ enableRateLimit: true });
+    try {
+      const markets = await exchange.loadMarkets();
+
+      console.log(`\n🌐 Exchange: ${exchangeId} | Märkte: ${Object.keys(markets).length}`);
+
+      for (const [symbol, marketRaw] of Object.entries(markets)) {
+        const market = marketRaw as Market; // 👉 Hier erfolgt das Casting
+
+        console.log(` - ${symbol} (Base: ${market.base}, Quote: ${market.quote}, Active: ${market.active})`);
+      }
+    } catch (err) {
+      console.error(`⚠️ Fehler bei ${exchangeId}:`, (err as Error).message);
+    }
+  }
+}
+
 async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) {
   const proExchanges = [
-    "bybit",
-    "cryptocom",
-    "gate",
-    "htx",
-    "kucoin",
-    "okx",
-    "bitstamp",
-    "kraken",
-    "bitget",
-    "binance",
-    "coinbase",
+    //"bybit",
+    //"cryptocom",
+    //"gate",
+    //"htx",
+    //"kucoin",
+    //"okx",
+    //"bitstamp",
+    //"kraken",
+    //"bitget",
+    //"binance",
+    //"coinbase",
     "bingx",
     "bitfinex",
     "mexc",
@@ -552,6 +554,8 @@ async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) 
     "bitmart",
     "ascendex",
     "probit",
+    //
+    //"bitmex",
   ];
 
   // Map aus aktiven sources (exchange+symbol)

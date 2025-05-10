@@ -2,7 +2,6 @@ import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
 import { getFeedDecimals, storeSubmittedPrice, getPriceHistory, getFeedId } from "../utils/mysql";
-import * as ccxt from "ccxt";
 
 export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;
@@ -107,34 +106,6 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const over = filtered.filter(r => r.ccxt_price / scale > r.ftso_value);
       const under = filtered.filter(r => r.ccxt_price / scale < r.ftso_value);
 
-      if (this.isDebug()) {
-        this.logger.debug(`[${feed.name}] Filtered: ${filtered.length}, Over: ${over.length}, Under: ${under.length}`);
-
-        if (over.length > 0) {
-          this.logger.debug(`[${feed.name}] Over Details:`);
-          over.forEach((r, i) => {
-            const diff = r.ccxt_price / scale - r.ftso_value;
-            const submitted_unscaled = r.submitted ? r.submitted / scale : null;
-
-            this.logger.debug(
-              `  #${i + 1}: CCXT=${(r.ccxt_price / scale).toFixed(8)}, FTSO=${r.ftso_value}, Submitted=${submitted_unscaled}, Diff=${diff.toFixed(8)}`
-            );
-          });
-        }
-
-        if (under.length > 0) {
-          this.logger.debug(`[${feed.name}] Under Details:`);
-          under.forEach((r, i) => {
-            const diff = r.ftso_value - r.ccxt_price / scale;
-            const submitted_unscaled = r.submitted ? r.submitted / scale : null;
-
-            this.logger.debug(
-              `  #${i + 1}: CCXT=${(r.ccxt_price / scale).toFixed(8)}, FTSO=${r.ftso_value}, Submitted=${submitted_unscaled}, Diff=${diff.toFixed(8)}`
-            );
-          });
-        }
-      }
-
       const avgOver = over.length
         ? over.reduce((sum, r) => sum + ((r.submitted ?? r.ccxt_price) / scale - r.ftso_value), 0) / over.length
         : 0;
@@ -146,6 +117,7 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const last2 = history.slice(0, 2);
       const forceOver = trend === "up" && last2.every(r => r.ccxt_price > r.ftso_value);
       const forceUnder = trend === "down" && last2.every(r => r.ccxt_price < r.ftso_value);
+
       this.logger.debug(
         `[${feed.name}] Last 2 diffs: ${last2.map(r => (r.ccxt_price - r.ftso_value).toFixed(6)).join(", ")}`
       );
@@ -156,7 +128,7 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       else {
         if (trend === "up") adjusted += avgUnder / scale;
         else if (trend === "down") adjusted -= avgOver / scale;
-        else adjusted -= avgOver / scale;
+        else adjusted += (avgUnder - avgOver) / (2 * scale);
       }
 
       if (this.isDebug()) {
@@ -167,7 +139,8 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     avgUnder      = ${avgUnder}\n` +
             `     forceOver     = ${forceOver}\n` +
             `     forceUnder    = ${forceUnder}\n` +
-            `     Adjusted Price= ${adjusted}`
+            `     Adjusted Price= ${adjusted}\n` +
+            `     CCXT Price= ${ccxtPrice}`
         );
       }
 
@@ -185,47 +158,38 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       return "flat";
     }
 
-    const trendChecks = config.sources.map(async ({ exchange: exchangeName, symbol }) => {
-      try {
-        // Reuse exchange instance
-        if (!this.trendExchanges.has(exchangeName)) {
-          const ExchangeClass = ccxt[exchangeName as keyof typeof ccxt];
-          if (typeof ExchangeClass !== "function") return null;
-          const instance = new (ExchangeClass as unknown as new (params: any) => ccxt.Exchange)({
-            enableRateLimit: true,
-          });
-          this.trendExchanges.set(exchangeName, instance);
-        }
-        const exchange = this.trendExchanges.get(exchangeName);
+    const priceDiffs: number[] = [];
 
-        // Load markets once per exchange
-        const marketKey = `${exchangeName}:${symbol}`;
-        if (!this.trendMarketsLoaded.has(marketKey)) {
-          await exchange.loadMarkets();
-          if (!(symbol in exchange.markets)) return null;
-          this.trendMarketsLoaded.add(marketKey);
-        }
+    for (const { exchange, symbol } of config.sources) {
+      const priceMap = this.latestPrice.get(symbol);
+      const info = priceMap?.get(exchange);
 
-        const candles = await exchange.fetchOHLCV(symbol, "1m", undefined, 2);
-        if (candles.length < 2) return null;
+      if (!info) continue;
 
-        const open = candles[0][1];
-        const close = candles.at(-1)?.[4];
-        return close > open ? "up" : close < open ? "down" : "flat";
-      } catch (err) {
-        this.logger.warn(`⚠️ Trend-Check-Fehler bei ${exchangeName}/${symbol}: ${(err as Error).message}`);
-        return null;
-      }
-    });
+      const ageMs = Date.now() - info.time;
+      if (ageMs > 30_000) continue;
 
-    const resultsRaw = await Promise.allSettled(trendChecks);
-    const results = resultsRaw
-      .filter(r => r.status === "fulfilled" && r.value !== null)
-      .map(r => (r as PromiseFulfilledResult<"up" | "down" | "flat">).value);
+      priceDiffs.push(info.value);
+    }
 
-    if (results.includes("up") && !results.includes("down")) return "up";
-    if (results.includes("down") && !results.includes("up")) return "down";
-    return "flat";
+    if (priceDiffs.length < 2) return "flat";
+
+    const first = priceDiffs[0];
+    const last = priceDiffs.at(-1)!;
+    const diff = last - first;
+    const pct = (diff / first) * 100;
+
+    if (this.isDebug()) {
+      this.logger.debug(`[${feedName}] Preisentwicklung: ${first} → ${last} = ${pct.toFixed(4)}%`);
+    }
+
+    const trend = pct > 0.03 ? "up" : pct < -0.03 ? "down" : "flat";
+
+    if (this.isDebug()) {
+      this.logger.debug(`[${feedName}] 🔍 Berechneter Trend: ${trend.toUpperCase()} (${pct.toFixed(4)}%)`);
+    }
+
+    return trend;
   }
 
   private isDebug(): boolean {
