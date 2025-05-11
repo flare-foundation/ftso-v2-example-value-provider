@@ -105,6 +105,9 @@ Feeds and source exchanges are defined in `feeds.json`. Example:
 ---
 
 ## ✅ Status
+add ftsoccxt class, 
+add ping for Websockets.
+add VotEposten Indexer History Data FTSO
 
 This fork is actively maintained by [AnimaTow](https://github.com/AnimaTow) and extends the Flare Foundation’s original version with smart aggregation logic for FTSOv2.
 

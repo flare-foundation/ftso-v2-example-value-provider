@@ -9,14 +9,14 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed); // ccxt price
-    if (this.isDebug()) this.logger.debug(`🔎 [${feed.name}] Live-Preis (CCXT): ${result.value}`);
+    this.debug(`🔎 [${feed.name}] Live-Preis (CCXT): ${result.value}`);
 
     const decimals = (await getFeedDecimals(feed.name)) ?? 8;
-    if (this.isDebug()) this.logger.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
+    this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
 
     const adjustedValue = await this.adjustPrice(result.value, feed, decimals);
 
-    if (this.isDebug()) this.logger.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
+    this.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
 
     if (this.currentVotingRoundId) {
       const submittedScaled = Math.round(adjustedValue * 10 ** decimals);
@@ -46,7 +46,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   async getValues(feeds: FeedId[], votingRoundId?: number): Promise<FeedValueData[]> {
     if (votingRoundId !== undefined) {
-      if (this.isDebug()) this.logger.debug(`🆔 Setze VotingRoundId auf ${votingRoundId}`);
+      this.debug(`🆔 Setze VotingRoundId auf ${votingRoundId}`);
       this.currentVotingRoundId = votingRoundId;
     }
 
@@ -104,5 +104,9 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   private isDebug(): boolean {
     return process.env.LOG_LEVEL?.toLowerCase() === "debug";
+  }
+
+  private debug(msg: string) {
+    if (this.isDebug()) this.logger.debug(msg);
   }
 }
