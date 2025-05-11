@@ -139,6 +139,7 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   async start() {
+    this.loadFallbackPrices();
     this.config = this.loadConfig();
     const exchangeToSymbols = new Map<string, Set<string>>();
     if (process.env.DEBUG_ALL_EXCHANGES === "true") {
@@ -247,6 +248,23 @@ export class CcxtFeed implements BaseDataFeed {
       marketIds.forEach(marketId => void this.watchTradesForSymbol(exchange, marketId));
     } else {
       this.logger.warn(`Not tracking ${exchange.id} for symbols ${marketIds}`);
+    }
+  }
+
+  private loadFallbackPrices() {
+    const path = join(process.cwd(), "src/config/fallback-prices.json");
+    try {
+      const raw = readFileSync(path, "utf-8");
+      const fallback: Record<string, number> = JSON.parse(raw);
+      const now = Date.now();
+      for (const [key, value] of Object.entries(fallback)) {
+        if (value > 0) {
+          this.lastValidFeedPrice.set(key, { value, time: now });
+        }
+      }
+      this.logger.log(`✅ ${Object.keys(fallback).length} Fallback-Preise geladen`);
+    } catch (e) {
+      this.logger.warn(`⚠️ fallback-prices.json konnte nicht geladen werden: ${e}`);
     }
   }
 
@@ -480,6 +498,7 @@ export class CcxtFeed implements BaseDataFeed {
     this.logger.warn("Unable to calculate weighted median");
     return undefined;
   }
+
 
   private loadConfig() {
     const network = process.env.NETWORK as networks;

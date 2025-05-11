@@ -1,7 +1,7 @@
-import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
-import { BaseDataFeed } from "./base-feed";
-import { CcxtFeed } from "./ccxt-provider-service";
-import { getVotingHistory, storeSubmittedPrice, getFeedDecimals } from "../utils/mysql";
+import { FeedId, FeedValueData, FeedVolumeData } from "../src/dto/provider-requests.dto";
+import { BaseDataFeed } from "../src/data-feeds/base-feed";
+import { CcxtFeed } from "../src/data-feeds/ccxt-provider-service";
+import { getVotingHistory, storeSubmittedPrice, getFeedDecimals } from "../src/utils/mysql";
 
 export class Test4CcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;

@@ -1,8 +1,8 @@
-import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
-import { BaseDataFeed } from "./base-feed";
-import { CcxtFeed } from "./ccxt-provider-service";
-import { getVotingHistory, storeSubmittedPrice } from "../utils/mysql";
-import { getBias, setBias, saveBiases, loadBiases } from "../utils/bias-storage";
+import { FeedId, FeedValueData, FeedVolumeData } from "../src/dto/provider-requests.dto";
+import { BaseDataFeed } from "../src/data-feeds/base-feed";
+import { CcxtFeed } from "../src/data-feeds/ccxt-provider-service";
+import { getVotingHistory, storeSubmittedPrice } from "../src/utils/mysql";
+import { getBias, setBias, saveBiases, loadBiases } from "./bias-storage";
 
 export class Test3CcxtFeed extends CcxtFeed implements BaseDataFeed {
   private learningRate = 0.1;

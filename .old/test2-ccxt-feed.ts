@@ -1,6 +1,6 @@
-import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
-import { BaseDataFeed } from "./base-feed";
-import { CcxtFeed } from "./ccxt-provider-service";
+import { FeedId, FeedValueData, FeedVolumeData } from "../src/dto/provider-requests.dto";
+import { BaseDataFeed } from "../src/data-feeds/base-feed";
+import { CcxtFeed } from "../src/data-feeds/ccxt-provider-service";
 
 export class Test2CcxtFeed extends CcxtFeed implements BaseDataFeed {
   constructor() {

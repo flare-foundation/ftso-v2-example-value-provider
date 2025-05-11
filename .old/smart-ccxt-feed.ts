@@ -1,6 +1,6 @@
-import { FeedId } from "../dto/provider-requests.dto";
-import { CcxtFeed } from "./ccxt-provider-service";
-import { BaseDataFeed } from "./base-feed";
+import { FeedId } from "../src/dto/provider-requests.dto";
+import { CcxtFeed } from "../src/data-feeds/ccxt-provider-service";
+import { BaseDataFeed } from "../src/data-feeds/base-feed";
 
 // type PriceInfo is reserved for future use (e.g., weighted median calculations)
 // type PriceInfo = {
