@@ -13,20 +13,15 @@ The provider behavior can be customized via environment variables:
 
 ### Required
 
-| Variable               | Description                                                         |
-|------------------------|---------------------------------------------------------------------|
-| `VALUE_PROVIDER_IMPL`  | Set to `smartccxt` (default), `fixed`, or `random`                  |
-| `VALUE_PROVIDER_CLIENT_PORT` | Port to run the API server (default: `3101`)                   |
+| Variable               | Description                                               |
+|------------------------|-----------------------------------------------------------|
+| `VALUE_PROVIDER_IMPL`  | Set to `ccxt` (default), `ftsoccxt`, `fixed`, or `random` |
+| `VALUE_PROVIDER_CLIENT_PORT` | Port to run the API server (default: `3101`)              |
 
 ### SmartCCXT Specific
 
 | Variable                      | Description                                                                 |
 |-------------------------------|-----------------------------------------------------------------------------|
-| `ENABLE_OUTLIER_FILTER`       | Set to `true` to enable median-based outlier filtering                     |
-| `OUTLIER_THRESHOLD_PERCENT`   | Max deviation from median in % before a price is considered an outlier     |
-| `ENABLE_VOLUME_WEIGHTING`     | Set to `true` to weight prices based on recent trading volume              |
-| `VOLUME_LOOKBACK_SECONDS`     | Time window in seconds to calculate exchange volume                        |
-| `MAX_PRICE_AGE_MS`            | Maximum age (ms) a price is considered fresh (default: `30000`)            |
 | `MEDIAN_DECAY`                | Decay factor used in weighted median calculation (default: `0.00005`)      |
 | `TRADES_HISTORY_SIZE`         | Max number of trades to cache per symbol (default: `1000`)                 |
 
@@ -34,14 +29,7 @@ The provider behavior can be customized via environment variables:
 
 ```bash
 docker run --rm -it --publish "0.0.0.0:3101:3101" \
-  -e VALUE_PROVIDER_IMPL=smartccxt \
-  -e ENABLE_OUTLIER_FILTER=false \
-  -e ENABLE_VOLUME_WEIGHTING=false \
-  -e ENABLE_WEIGHTED_MEDIAN=true \
-  -e ENABLE_MAX_PRICE_AGE=true \
-  -e OUTLIER_THRESHOLD_PERCENT=0.5 \
-  -e VOLUME_LOOKBACK_SECONDS=3600 \
-  -e MAX_PRICE_AGE_MS=30000 \
+  -e VALUE_PROVIDER_IMPL=ccxt \
   ghcr.io/animatow/ftso-v2-value-provider:latest
 ```
 

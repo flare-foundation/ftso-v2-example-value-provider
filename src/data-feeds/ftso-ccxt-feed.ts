@@ -31,8 +31,9 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     Decimals      = ${decimals}`
         );
 
-      // ✅ HIER ggf. aktivieren:
-      //await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
+      if (this.currentVotingRoundId && this.shouldStorePrices()) {
+        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
+      }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
     }
@@ -95,6 +96,10 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     }
 
     return trend;
+  }
+
+  private shouldStorePrices(): boolean {
+    return process.env.ENABLE_PRICE_STORAGE?.toLowerCase() === "true";
   }
 
   private isDebug(): boolean {
