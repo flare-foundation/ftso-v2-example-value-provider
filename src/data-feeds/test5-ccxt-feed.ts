@@ -8,7 +8,7 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed); // ccxt price
-    if (this.isDebug()) this.logger.debug(`🔎 [${feed.name}] Unkorrigierter Preis (CCXT): ${result.value}`);
+    if (this.isDebug()) this.logger.debug(`🔎 [${feed.name}] Live-Preis (CCXT): ${result.value}`);
 
     const decimals = (await getFeedDecimals(feed.name)) ?? 8;
     if (this.isDebug()) this.logger.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
@@ -29,6 +29,8 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     CCXT Raw      = ${result.value} (scaled=${ccxtScaled})\n` +
             `     Decimals      = ${decimals}`
         );
+
+      // ✅ HIER ggf. aktivieren:
       await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -60,10 +62,11 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       if (!feedId) return original;
 
       const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
+
       const ccxtPrice = original;
 
       if (this.isDebug()) {
-        this.logger.debug(`📚 [${feed.name}] Historie der letzten Preisabweichungen:`);
+        this.logger.debug(`📚 [${feed.name}] Letzte Preisabweichungen aus historischen Daten:`);
         history.forEach((entry, i) => {
           const ccxt = entry.ccxt_price / scale;
           const ftso = entry.ftso_value;
@@ -71,33 +74,28 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
           const diffPct = ((ccxt - ftso) / ftso) * 100;
 
           this.logger.debug(
-            `  #${i + 1}: voting_round_id=${entry.voting_round_id}` +
-              `, CCXT=${ccxt.toFixed(8)}` +
-              `, FTSO=${ftso.toFixed(8)}` +
-              (submitted !== null ? `, Submitted=${submitted.toFixed(8)}` : "") +
-              `, Diff=${diffPct.toFixed(4)}%`
+            `  #${i + 1}: Round=${entry.voting_round_id}, CCXT=${ccxt.toFixed(8)}, FTSO=${ftso.toFixed(8)},` +
+              (submitted !== null ? ` Submitted=${submitted.toFixed(8)},` : "") +
+              ` Diff=${diffPct.toFixed(4)}%`
           );
         });
       }
 
-      const tolerance = 0.05;
+      // 🟨 Dynamische Toleranz z.B. bei starkem Trend lockern
+      const baseTolerance = 0.05;
+      const tolerance = trend === "flat" ? baseTolerance : baseTolerance * 2;
       this.logger.debug(`[${feed.name}] Toleranz für Filterung: ${tolerance}%`);
+
       const filtered = history.filter(row => {
         const ftso_scaled = Math.round(row.ftso_value * scale);
-        const ccxt_unscaled = row.ccxt_price / scale;
-        const submitted_unscaled = row.submitted ? row.submitted / scale : null;
-
         const diffPct = Math.abs((row.ccxt_price - ftso_scaled) / ftso_scaled) * 100;
 
         const keep = diffPct <= tolerance;
 
         if (this.isDebug()) {
           this.logger.debug(
-            `[${feed.name}] Prüfe Datenpunkt:` +
-              ` CCXT=${ccxt_unscaled.toFixed(8)},` +
-              ` FTSO=${row.ftso_value.toFixed(8)},` +
-              (submitted_unscaled !== null ? ` Submitted=${submitted_unscaled.toFixed(8)},` : "") +
-              ` Diff=${diffPct.toFixed(4)}% → ${keep ? "✅ behalten" : "❌ verworfen"}`
+            `[${feed.name}] Prüfe Datenpunkt: CCXT=${(row.ccxt_price / scale).toFixed(8)}, ` +
+              `FTSO=${row.ftso_value.toFixed(8)}, Diff=${diffPct.toFixed(4)}% → ${keep ? "✅" : "❌"}`
           );
         }
         return keep;
@@ -109,7 +107,6 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const avgOver = over.length
         ? over.reduce((sum, r) => sum + ((r.submitted ?? r.ccxt_price) / scale - r.ftso_value), 0) / over.length
         : 0;
-
       const avgUnder = under.length
         ? under.reduce((sum, r) => sum + (r.ftso_value - (r.submitted ?? r.ccxt_price) / scale), 0) / under.length
         : 0;
@@ -118,18 +115,13 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       const forceOver = trend === "up" && last2.every(r => r.ccxt_price > r.ftso_value);
       const forceUnder = trend === "down" && last2.every(r => r.ccxt_price < r.ftso_value);
 
-      this.logger.debug(
-        `[${feed.name}] Last 2 diffs: ${last2.map(r => (r.ccxt_price - r.ftso_value).toFixed(6)).join(", ")}`
-      );
-
-      let adjusted = ccxtPrice;
-      if (forceOver) adjusted -= avgOver / scale;
-      else if (forceUnder) adjusted += avgUnder / scale;
-      else {
-        if (trend === "up") adjusted += avgUnder / scale;
-        else if (trend === "down") adjusted -= avgOver / scale;
-        else adjusted += (avgUnder - avgOver) / (2 * scale);
-      }
+      const adjusted = (() => {
+        if (forceOver) return ccxtPrice - avgOver / scale;
+        if (forceUnder) return ccxtPrice + avgUnder / scale;
+        if (trend === "up") return ccxtPrice + avgUnder / scale;
+        if (trend === "down") return ccxtPrice - avgOver / scale;
+        return ccxtPrice + (avgUnder - avgOver) / (2 * scale);
+      })();
 
       if (this.isDebug()) {
         this.logger.debug(
@@ -140,7 +132,7 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     forceOver     = ${forceOver}\n` +
             `     forceUnder    = ${forceUnder}\n` +
             `     Adjusted Price= ${adjusted}\n` +
-            `     CCXT Price= ${ccxtPrice}`
+            `     CCXT Price    = ${ccxtPrice}`
         );
       }
 
@@ -158,34 +150,27 @@ export class Test5CcxtFeed extends CcxtFeed implements BaseDataFeed {
       return "flat";
     }
 
-    const priceDiffs: number[] = [];
+    const prices: number[] = [];
 
     for (const { exchange, symbol } of config.sources) {
       const priceMap = this.latestPrice.get(symbol);
       const info = priceMap?.get(exchange);
-
       if (!info) continue;
 
-      const ageMs = Date.now() - info.time;
-      if (ageMs > 30_000) continue;
+      const age = Date.now() - info.time;
+      if (age > 30_000) continue;
 
-      priceDiffs.push(info.value);
+      prices.push(info.value); // Wichtig: unskaliert
     }
 
-    if (priceDiffs.length < 2) return "flat";
+    if (prices.length < 2) return "flat";
 
-    const first = priceDiffs[0];
-    const last = priceDiffs.at(-1)!;
-    const diff = last - first;
-    const pct = (diff / first) * 100;
-
-    if (this.isDebug()) {
-      this.logger.debug(`[${feedName}] Preisentwicklung: ${first} → ${last} = ${pct.toFixed(4)}%`);
-    }
-
+    const [first, last] = [prices[0], prices.at(-1)!];
+    const pct = ((last - first) / first) * 100;
     const trend = pct > 0.03 ? "up" : pct < -0.03 ? "down" : "flat";
 
     if (this.isDebug()) {
+      this.logger.debug(`[${feedName}] 🔍 Preisentwicklung (live): ${first} → ${last} = ${pct.toFixed(4)}%`);
       this.logger.debug(`[${feedName}] 🔍 Berechneter Trend: ${trend.toUpperCase()} (${pct.toFixed(4)}%)`);
     }
 

@@ -72,6 +72,8 @@ export async function getFeedDecimals(feedName: string): Promise<number | null> 
   return rows.length > 0 ? rows[0].decimals : null;
 }
 
+
+
 export async function getVotingHistory(feedName: string, limit = 5): Promise<VotingEntry[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT p.voting_round_id, p.value, p.first_quartile, p.third_quartile,

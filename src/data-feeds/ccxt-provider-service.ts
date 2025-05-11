@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
 import * as ccxt from "ccxt";
-import type { Exchange, Trade, Market } from "ccxt";
+import type { Exchange, Trade } from "ccxt";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
@@ -63,9 +63,6 @@ export class CcxtFeed implements BaseDataFeed {
   /** Symbol -> exchange -> volume */
   protected readonly volumes: Map<string, Map<string, VolumeStore>> = new Map();
   protected lastValidFeedPrice: Map<string, { value: number; time: number }> = new Map();
-
-  protected readonly trendExchanges = new Map<string, ccxt.Exchange>();
-  protected readonly trendMarketsLoaded = new Set<string>();
 
   private exportFallbackPrices(): void {
     const fallback: Record<string, number> = {};
@@ -159,7 +156,7 @@ export class CcxtFeed implements BaseDataFeed {
     const loadExchanges = [];
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
-        let ExchangeClass: new (args: any) => Exchange;
+        let ExchangeClass: new (args: Record<string, unknown>) => Exchange;
         if (ccxt.pro && ccxt.pro[exchangeName]) {
           ExchangeClass = ccxt.pro[exchangeName];
         } else if (ccxt[exchangeName]) {
@@ -187,7 +184,7 @@ export class CcxtFeed implements BaseDataFeed {
     }
 
     for (const [exchangeName, exchange] of this.exchangeByName.entries()) {
-      const pingFn = (exchange as any).ping;
+      const pingFn = (exchange as unknown as { ping?: (...args: unknown[]) => unknown }).ping;
       const interval = PING_INTERVALS[exchangeName] ?? 30000;
 
       if (typeof pingFn === "function") {
@@ -198,8 +195,12 @@ export class CcxtFeed implements BaseDataFeed {
             if (maybePromise instanceof Promise) {
               await maybePromise;
             }
-          } catch (err: any) {
-            this.logger.warn(`❌ Ping to ${exchangeName} failed: ${err.message ?? err}`);
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              this.logger.warn(`❌ Ping to ${exchangeName} failed: ${err.message}`);
+            } else {
+              this.logger.warn(`❌ Ping to ${exchangeName} failed: ${JSON.stringify(err)}`);
+            }
           }
         }, interval);
       }
@@ -249,10 +250,17 @@ export class CcxtFeed implements BaseDataFeed {
     }
   }
 
-  private async watchTradesForSymbols(exchange: Exchange, marketIds: string[]) {
+  private stopRequested = false;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public stop() {
+    this.stopRequested = true;
+  }
+
+  private async watchTradesForSymbols(exchange: Exchange, marketIds: string[]): Promise<void> {
     const sinceBySymbol = new Map<string, number>();
     // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (!this.stopRequested) {
       try {
         const trades = await exchange.watchTradesForSymbols(marketIds);
 
@@ -270,9 +278,8 @@ export class CcxtFeed implements BaseDataFeed {
         sinceBySymbol.set(lastTrade.symbol, lastTrade.timestamp);
 
         this.processVolume(exchange.id, lastTrade.symbol, newTrades);
-      } catch (e) {
-        const error = asError(e);
-        const message = error?.message || "";
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
 
         if (message.includes("code 1006")) {
           this.logger.verbose(`🔌 WebSocket closed (1006) for ${exchange.id}/${marketIds}, will retry`);
@@ -288,7 +295,7 @@ export class CcxtFeed implements BaseDataFeed {
   private async watchTradesForSymbol(exchange: Exchange, marketId: string) {
     let since = undefined;
     // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (!this.stopRequested) {
       try {
         const trades = await exchange.watchTrades(marketId, since);
         if (trades.length === 0) {
@@ -304,7 +311,7 @@ export class CcxtFeed implements BaseDataFeed {
         since = lastTrade.timestamp + 1;
 
         this.processVolume(exchange.id, lastTrade.symbol, trades);
-      } catch (e) {
+      } catch (e: unknown) {
         const error = asError(e);
         this.logger.debug(`Failed to watch trades for ${exchange.id}/${marketId}: ${error}, will retry`);
         await sleepFor(5_000 + Math.random() * 10_000);
@@ -507,33 +514,6 @@ function feedsEqual(a: FeedId, b: FeedId): boolean {
   return a.category === b.category && a.name === b.name;
 }
 
-const exchangesToCheck = ["binance", "coinbase", "bitfinex"];
-
-async function logMarketsForExchanges() {
-  for (const exchangeId of exchangesToCheck) {
-    const ExchangeClass = (ccxt as any)[exchangeId];
-    if (typeof ExchangeClass !== "function") {
-      console.warn(`❌ Exchange ${exchangeId} ist kein gültiger Konstruktor.`);
-      continue;
-    }
-
-    const exchange = new ExchangeClass({ enableRateLimit: true });
-    try {
-      const markets = await exchange.loadMarkets();
-
-      console.log(`\n🌐 Exchange: ${exchangeId} | Märkte: ${Object.keys(markets).length}`);
-
-      for (const [symbol, marketRaw] of Object.entries(markets)) {
-        const market = marketRaw as Market; // 👉 Hier erfolgt das Casting
-
-        console.log(` - ${symbol} (Base: ${market.base}, Quote: ${market.quote}, Active: ${market.active})`);
-      }
-    } catch (err) {
-      console.error(`⚠️ Fehler bei ${exchangeId}:`, (err as Error).message);
-    }
-  }
-}
-
 async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) {
   const proExchanges = [
     //"bybit",
@@ -566,7 +546,7 @@ async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) 
 
   for (const exchangeId of proExchanges) {
     try {
-      const ExchangeClass = (ccxt as any)[exchangeId];
+      const ExchangeClass = (ccxt as unknown as Record<string, new (...args: unknown[]) => Exchange>)[exchangeId];
       if (typeof ExchangeClass !== "function") continue;
 
       const exchange = new ExchangeClass({ enableRateLimit: true });
