@@ -108,6 +108,7 @@ Feeds and source exchanges are defined in `feeds.json`. Example:
 add ftsoccxt class, 
 add ping for Websockets.
 add VotEposten Indexer History Data FTSO
+add fallback-prices.json for Restart Map is Clean
 
 This fork is actively maintained by [AnimaTow](https://github.com/AnimaTow) and extends the Flare Foundation’s original version with smart aggregation logic for FTSOv2.
 
