@@ -61,7 +61,16 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     const feedId = await getFeedId(feed.name);
     if (!feedId) return original;
     const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
-    return adjustPrice(feed, original, decimals, history, trend, this.logger);
+
+    let price;
+    if (feed.name === "USDT/USD") {
+      price = original;
+    } else if (feed.name === "USDC/USD") {
+      price = original;
+    } else {
+      price = adjustPrice(feed, original, decimals, history, trend, this.logger);
+    }
+    return price;
   }
 
   private async getTrend15s(feedName: string): Promise<"up" | "down" | "flat"> {

@@ -499,7 +499,6 @@ export class CcxtFeed implements BaseDataFeed {
     return undefined;
   }
 
-
   private loadConfig() {
     const network = process.env.NETWORK as networks;
     let configPath: string;
@@ -511,21 +510,24 @@ export class CcxtFeed implements BaseDataFeed {
         configPath = CONFIG_PATH + "feeds.json";
     }
 
+    let config: FeedConfig[];
     try {
       const jsonString = readFileSync(configPath, "utf-8");
-      const config: FeedConfig[] = JSON.parse(jsonString);
-
-      if (config.find(feed => feedsEqual(feed.feed, usdtToUsdFeedId)) === undefined) {
-        throw new Error("Must provide USDT feed sources, as it is used for USD conversion.");
+      config = JSON.parse(jsonString);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error("Error loading/parsing JSON config:", err);
       }
-
-      this.logger.log(`Supported feeds: ${JSON.stringify(config.map(f => f.feed))}`);
-
-      return config;
-    } catch (err) {
-      this.logger.error("Error parsing JSON config:", err);
       throw err;
     }
+
+    // Jetzt ist klar: nur bei gültigem JSON prüfst du die Business-Logik
+    if (!config.find(feed => feedsEqual(feed.feed, usdtToUsdFeedId))) {
+      throw new Error("Must provide USDT feed sources, as it is used for USD conversion.");
+    }
+
+    this.logger.log(`Supported feeds: ${JSON.stringify(config.map(f => f.feed))}`);
+    return config;
   }
 }
 

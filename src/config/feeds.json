@@ -221,7 +221,6 @@
         "exchange": "binance",
         "symbol": "ADA/USDT"
       },
-
       {
         "exchange": "bitget",
         "symbol": "ADA/USDT"
@@ -615,6 +614,34 @@
       },
       {
         "exchange": "cryptocom",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "ascendex",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "bequant",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "blockchaincom",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "cex",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "independentreserve",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "kraken",
+        "symbol": "USDT/USD"
+      },
+      {
+        "exchange": "ndax",
         "symbol": "USDT/USD"
       }
     ]
