@@ -57,6 +57,8 @@ pids
 # configs
 /config/bias-cache.json
 /config/fallback-prices.json
+src/config/fallback-prices.json
+src/config/bias-cache.json
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
