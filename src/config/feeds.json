@@ -221,17 +221,14 @@
         "exchange": "binance",
         "symbol": "ADA/USDT"
       },
+
       {
         "exchange": "bitget",
         "symbol": "ADA/USDT"
       },
       {
-        "exchange": "cryptocom",
+        "exchange": "coinbase",
         "symbol": "ADA/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "ADA/USD"
       },
       {
         "exchange": "gate",
@@ -239,6 +236,10 @@
       },
       {
         "exchange": "kucoin",
+        "symbol": "ADA/USDT"
+      },
+      {
+        "exchange": "mexc",
         "symbol": "ADA/USDT"
       },
       {
@@ -1608,24 +1609,9 @@
       "useVolumeWeighting": true
     },
     "sources": [
+
       {
-        "exchange": "ascendex",
-        "symbol": "AAVE/USDT"
-      },
-      {
-        "exchange": "binanceus",
-        "symbol": "AAVE/USDT"
-      },
-      {
-        "exchange": "bingx",
-        "symbol": "AAVE/USDT"
-      },
-      {
-        "exchange": "bitfinex",
-        "symbol": "AAVE/USDT"
-      },
-      {
-        "exchange": "bitget",
+        "exchange": "mexc",
         "symbol": "AAVE/USDT"
       },
       {
@@ -1633,9 +1619,15 @@
         "symbol": "AAVE/USDT"
       },
       {
-        "exchange": "bybit",
+        "exchange": "probit",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "p2b",
         "symbol": "AAVE/USDT"
       }
+
+
     ]
   },
   {

@@ -71,6 +71,10 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       price = history?.[0]?.ftso_value;
     } else if (feed.name === "USDS/USD") {
       price = history?.[0]?.ftso_value;
+    } else if (feed.name === "ADA/USD") {
+      price = original;
+    } else if (feed.name === "AAVE/USD") {
+      price = original;
     } else {
       price = adjustPrice(feed, original, decimals, history, trend, this.logger);
     }
