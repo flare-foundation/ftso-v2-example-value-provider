@@ -19,8 +19,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
 
     const onchainPrice = this.onchainPriceMap.get(feed.name);
-    //const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 10 ** decimals) : null;
-    const onchainPriceScaled = typeof onchainPrice === "number" ? Math.round(onchainPrice * 1e8) : null;
+    const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 10 ** decimals) : null;
 
     this.debug(`🔗 [${feed.name}] On-Chain Preis: ${onchainPrice} Scaled: ${onchainPriceScaled}`);
 
