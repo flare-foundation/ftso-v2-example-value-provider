@@ -19,9 +19,12 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
 
     const onchainPrice = this.onchainPriceMap.get(feed.name);
-    this.debug(`🔗 [${feed.name}] On-Chain Preis (aus Cache): ${onchainPrice}`);
+    //const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 10 ** decimals) : null;
+    const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 1e8) : null;
 
-    const adjustedValue = await this.adjustPrice(result.value, feed, decimals);
+    this.debug(`🔗 [${feed.name}] On-Chain Preis: ${onchainPrice} Scaled: ${onchainPriceScaled}`);
+
+    const adjustedValue = await this.adjustPrice(result.value, feed, decimals, onchainPrice);
 
     this.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
 
@@ -35,11 +38,18 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     Round         = ${this.currentVotingRoundId}\n` +
             `     Adjusted      = ${adjustedValue} (scaled=${submittedScaled})\n` +
             `     CCXT Raw      = ${result.value} (scaled=${ccxtScaled})\n` +
-            `     Decimals      = ${decimals}`
+            `     Decimals      = ${decimals}\n` +
+            `     Onchain       = ${onchainPrice} (scaled=${onchainPriceScaled})`
         );
 
       if (this.shouldStorePrices()) {
-        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled, onchainPrice);
+        await storeSubmittedPrice(
+          feed.name,
+          this.currentVotingRoundId,
+          submittedScaled,
+          ccxtScaled,
+          onchainPriceScaled
+        );
       }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -122,18 +132,18 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     return super.getVolumes(feeds, window);
   }
 
-  private async adjustPrice(original: number, feed: FeedId, decimals: number): Promise<number> {
+  private async adjustPrice(original: number, feed: FeedId, decimals: number, onchainPrice: number): Promise<number> {
     const feedId = await getFeedId(feed.name);
     if (!feedId) return original;
     const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
-
+    console.log(onchainPrice);
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
       price = history?.[0]?.ftso_value;
     } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
       price = original;
     } else {
-      price = adjustPrice(feed, original, decimals, history, trend, this.logger);
+      price = adjustPrice(feed, original, onchainPrice, decimals, history, trend, this.logger);
     }
     return price;
   }
@@ -171,7 +181,6 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     return trend;
   }
-
 
   private getFlareRPC(): string {
     return process.env.FLARE_RPC;

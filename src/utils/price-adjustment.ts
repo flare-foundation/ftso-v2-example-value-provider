@@ -5,6 +5,7 @@ import { ILogger } from "./ILogger";
 export async function adjustPrice(
   feed: FeedId,
   original: number,
+  onchainprice_live: number,
   decimals: number,
   history: PriceHistoryEntry[],
   trend: "up" | "down" | "flat",
@@ -13,17 +14,18 @@ export async function adjustPrice(
   try {
     const scale = 10 ** decimals;
     const ccxtPrice = original;
-
+    let onchainPrice: number;
     if (logger) {
       logger.debug(`📚 [${feed.name}] Letzte Preisabweichungen aus historischen Daten:`);
       history.forEach((entry, i) => {
         const ccxt = entry.ccxt_price / scale;
+        onchainPrice = entry.onchain_price;
         const ftso = entry.ftso_value;
         const submitted = entry.submitted ? entry.submitted / scale : null;
         const diffPct = ((ccxt - ftso) / ftso) * 100;
 
         logger.debug(
-          `  #${i + 1}: Round=${entry.voting_round_id}, CCXT=${ccxt.toFixed(8)}, FTSO=${ftso.toFixed(8)},` +
+          `  #${i + 1}: Round=${entry.voting_round_id}, CCXT=${ccxt.toFixed(8)}, FTSO=${ftso.toFixed(8)}, ONCHAIN=${onchainPrice.toFixed(8)},` +
             (submitted !== null ? ` Submitted=${submitted.toFixed(8)},` : "") +
             ` Diff=${diffPct.toFixed(4)}%`
         );
@@ -70,7 +72,8 @@ export async function adjustPrice(
         `     forceOver     = ${forceOver}\n` +
         `     forceUnder    = ${forceUnder}\n` +
         `     Adjusted Price= ${adjusted}\n` +
-        `     CCXT Price    = ${ccxtPrice}`
+        `     CCXT Price live    = ${ccxtPrice}\n` +
+        `     ONCHAIN Price live    = ${onchainprice_live}`
     );
 
     return adjusted;

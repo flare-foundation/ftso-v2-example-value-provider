@@ -26,6 +26,7 @@ export interface VotingEntry {
 export type PriceHistoryEntry = {
   voting_round_id: number;
   ccxt_price: number;
+  onchain_price: number;
   submitted: number;
   ftso_value: number;
   decimals: number;
