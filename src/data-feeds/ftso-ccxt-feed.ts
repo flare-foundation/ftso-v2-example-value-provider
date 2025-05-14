@@ -75,6 +75,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       price = original;
     } else if (feed.name === "AAVE/USD") {
       price = original;
+    } else if (feed.name === "SGB/USD") {
+      price = original;
     } else {
       price = adjustPrice(feed, original, decimals, history, trend, this.logger);
     }
