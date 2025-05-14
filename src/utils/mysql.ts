@@ -42,6 +42,7 @@ export async function getPriceHistory(feedId: number, limit = 30): Promise<Price
     SELECT 
       ps.voting_round_id,
       ps.ccxt_price,
+      ps.onchain_price,
       ps.submitted_price AS submitted,
       fp.value AS ftso_value,
       ff.decimals
@@ -58,6 +59,7 @@ export async function getPriceHistory(feedId: number, limit = 30): Promise<Price
   return rows.map(r => ({
     voting_round_id: Number(r.voting_round_id),
     ccxt_price: Number(r.ccxt_price) / 1e8,
+    onchain_price: Number(r.onchain_price) / 1e8,
     submitted: Number(r.submitted) / 1e8,
     ftso_value: Number(r.ftso_value) / 10 ** r.decimals,
     decimals: r.decimals,
@@ -133,9 +135,9 @@ export async function storeSubmittedPrice(
        VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          submitted_price = VALUES(submitted_price),
-         onchain_price = VALUES(onchain_price),
-         ccxt_price = VALUES(ccxt_price)`,
-      [feedId, votingRoundId, submittedScaled, ccxtScaled]
+         ccxt_price = VALUES(ccxt_price),
+         onchain_price = VALUES(onchain_price)`,
+      [feedId, votingRoundId, submittedScaled, ccxtScaled, onchainScaled]
     );
   } catch (err) {
     console.error("❌ Fehler bei storeSubmittedPrice:", err);
