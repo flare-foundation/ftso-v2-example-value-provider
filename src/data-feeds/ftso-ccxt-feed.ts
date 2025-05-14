@@ -1,11 +1,15 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
-import { getFeedDecimals, storeSubmittedPrice, getPriceHistory, getFeedId } from "../utils/mysql";
+import { getFeedDecimals, getFeedId, getPriceHistory, storeSubmittedPrice } from "../utils/mysql";
 import { adjustPrice } from "../utils/price-adjustment";
+import Web3 from "web3";
+import { AbiItem } from "web3-utils";
+import { FEED_MAP } from "../utils/feed-mapping";
 
 export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;
+  private onchainPriceMap: Map<string, number> = new Map();
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed); // ccxt price
@@ -13,6 +17,9 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     const decimals = (await getFeedDecimals(feed.name)) ?? 8;
     this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
+
+    const onchainPrice = this.onchainPriceMap.get(feed.name);
+    this.debug(`🔗 [${feed.name}] On-Chain Preis (aus Cache): ${onchainPrice}`);
 
     const adjustedValue = await this.adjustPrice(result.value, feed, decimals);
 
@@ -31,8 +38,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     Decimals      = ${decimals}`
         );
 
-      if (this.currentVotingRoundId && this.shouldStorePrices()) {
-        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled);
+      if (this.shouldStorePrices()) {
+        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled, onchainPrice);
       }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -46,11 +53,69 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
   async getValues(feeds: FeedId[], votingRoundId?: number): Promise<FeedValueData[]> {
     if (votingRoundId !== undefined) {
-      this.debug(`🆔 Setze VotingRoundId auf ${votingRoundId}`);
+      this.debug(`🆔 getValues Setze VotingRoundId auf ${votingRoundId}`);
       this.currentVotingRoundId = votingRoundId;
     }
 
+    const onchainPrices = await this.getOnchainFeedValues();
+    this.onchainPriceMap.clear();
+    for (const [symbol, value] of Object.entries(onchainPrices)) {
+      this.onchainPriceMap.set(symbol, value);
+    }
+
     return Promise.all(feeds.map(feed => this.getValue(feed)));
+  }
+
+  async getOnchainFeedValues(): Promise<Record<string, number>> {
+    const web3 = new Web3(this.getFlareRPC());
+
+    const ABI: AbiItem[] = [
+      {
+        name: "getFeedsById",
+        type: "function",
+        stateMutability: "payable",
+        inputs: [{ internalType: "bytes21[]", name: "_feedIds", type: "bytes21[]" }],
+        outputs: [
+          { internalType: "uint256[]", name: "", type: "uint256[]" },
+          { internalType: "int8[]", name: "", type: "int8[]" },
+          { internalType: "uint64", name: "", type: "uint64" },
+        ],
+      },
+    ];
+
+    const contract = new web3.eth.Contract(ABI, "0x7BDE3Df0624114eDB3A67dFe6753e62f4e7c1d20");
+    const feedIds = Object.values(FEED_MAP).map(hex => web3.utils.hexToBytes(hex));
+
+    let raw: unknown;
+    try {
+      raw = await contract.methods.getFeedsById(feedIds).call({ value: "1" });
+    } catch (e) {
+      throw new Error(`❌ Smart Contract call failed: ${(e as Error).message}`);
+    }
+
+    // → Zugriff wie auf Tuple-Array simulieren
+    const valuesRaw = raw[0];
+    const decimalsRaw = raw[1];
+    const timestampRaw = raw[2];
+
+    if (!Array.isArray(valuesRaw) || !Array.isArray(decimalsRaw) || (!timestampRaw && timestampRaw !== 0)) {
+      const fallback = JSON.stringify(raw, (_, v) => (typeof v === "bigint" ? v.toString() : v));
+      throw new Error(`FTSO RPC call returned unexpected structure. Raw: ${fallback}`);
+    }
+
+    const values = valuesRaw.map(v => Number(v));
+    const decimals = decimalsRaw.map(v => Number(v));
+    const timestamp = Number(timestampRaw);
+
+    const feedKeys = Object.keys(FEED_MAP);
+    const prices: Record<string, number> = {};
+
+    for (let i = 0; i < feedKeys.length; i++) {
+      prices[feedKeys[i]] = values[i] / 10 ** decimals[i];
+    }
+
+    this.debug(`📊 On-chain Preise geladen – Timestamp: ${new Date(timestamp * 1000).toISOString()}`);
+    return prices;
   }
 
   async getVolumes(feeds: FeedId[], window: number): Promise<FeedVolumeData[]> {
@@ -62,20 +127,10 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     if (!feedId) return original;
     const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
 
-    let price;
-    if (feed.name === "USDT/USD") {
+    let price: number | PromiseLike<number>;
+    if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
       price = history?.[0]?.ftso_value;
-    } else if (feed.name === "USDC/USD") {
-      price = history?.[0]?.ftso_value;
-    } else if (feed.name === "USDX/USD") {
-      price = history?.[0]?.ftso_value;
-    } else if (feed.name === "USDS/USD") {
-      price = history?.[0]?.ftso_value;
-    } else if (feed.name === "ADA/USD") {
-      price = original;
-    } else if (feed.name === "AAVE/USD") {
-      price = original;
-    } else if (feed.name === "SGB/USD") {
+    } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
       price = original;
     } else {
       price = adjustPrice(feed, original, decimals, history, trend, this.logger);
@@ -100,7 +155,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       const age = Date.now() - info.time;
       if (age > 30_000) continue;
 
-      prices.push(info.value); // Wichtig: unskaliert
+      prices.push(info.value);
     }
 
     if (prices.length < 2) return "flat";
@@ -115,6 +170,11 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     }
 
     return trend;
+  }
+
+
+  private getFlareRPC(): string {
+    return process.env.FLARE_RPC;
   }
 
   private shouldStorePrices(): boolean {

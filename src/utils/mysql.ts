@@ -105,7 +105,8 @@ export async function storeSubmittedPrice(
   feedName: string,
   votingRoundId: number,
   submitted: number,
-  ccxt: number
+  ccxt: number,
+  onchain: number
 ): Promise<void> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
@@ -122,18 +123,19 @@ export async function storeSubmittedPrice(
     const scale = 1e8; // FIXED scale to match ftso_prices
     const submittedScaled = Math.round(submitted * scale);
     const ccxtScaled = Math.round(ccxt * scale);
-
+    const onchainScaled = Math.round(onchain * scale);
     console.debug(
-      `📦 Speichere Preis (1e8): submitted=${submitted} → ${submittedScaled}, ccxt=${ccxt} → ${ccxtScaled}`
+      `📦 Speichere Preis (1e8): submitted=${submitted} → ${submittedScaled}, ccxt=${ccxt} → ${ccxtScaled}, onchain=${onchain} → ${onchainScaled}`
     );
 
     await pool.query(`INSERT IGNORE INTO voting_rounds (id) VALUES (?)`, [votingRoundId]);
 
     await pool.query(
-      `INSERT INTO price_submissions (feed_id, voting_round_id, submitted_price, ccxt_price)
+      `INSERT INTO price_submissions (feed_id, voting_round_id, submitted_price, ccxt_price, onchain_price)
        VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          submitted_price = VALUES(submitted_price),
+         onchain_price = VALUES(onchain_price),
          ccxt_price = VALUES(ccxt_price)`,
       [feedId, votingRoundId, submittedScaled, ccxtScaled]
     );

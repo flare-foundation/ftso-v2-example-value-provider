@@ -52,10 +52,6 @@
         "symbol": "SGB/USD"
       },
       {
-        "exchange": "bitrue",
-        "symbol": "SGB/USDT"
-      },
-      {
         "exchange": "coinex",
         "symbol": "SGB/USDT"
       },
