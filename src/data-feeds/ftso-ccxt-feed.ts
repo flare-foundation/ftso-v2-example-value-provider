@@ -20,7 +20,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     const onchainPrice = this.onchainPriceMap.get(feed.name);
     //const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 10 ** decimals) : null;
-    const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 1e8) : null;
+    const onchainPriceScaled = typeof onchainPrice === "number" ? Math.round(onchainPrice * 1e8) : null;
 
     this.debug(`🔗 [${feed.name}] On-Chain Preis: ${onchainPrice} Scaled: ${onchainPriceScaled}`);
 
@@ -136,12 +136,15 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     const feedId = await getFeedId(feed.name);
     if (!feedId) return original;
     const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
-    console.log(onchainPrice);
+
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
       price = history?.[0]?.ftso_value;
     } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
       price = original;
+    } else if (["BTC/USD"].includes(feed.name)) {
+      console.log(onchainPrice);
+      price = adjustPrice(feed, original, onchainPrice, decimals, history, trend, this.logger);
     } else {
       price = adjustPrice(feed, original, onchainPrice, decimals, history, trend, this.logger);
     }
