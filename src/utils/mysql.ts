@@ -72,8 +72,6 @@ export async function getFeedDecimals(feedName: string): Promise<number | null> 
   return rows.length > 0 ? rows[0].decimals : null;
 }
 
-
-
 export async function getVotingHistory(feedName: string, limit = 5): Promise<VotingEntry[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT p.voting_round_id, p.value, p.first_quartile, p.third_quartile,
@@ -132,7 +130,7 @@ export async function storeSubmittedPrice(
 
     await pool.query(
       `INSERT INTO price_submissions (feed_id, voting_round_id, submitted_price, ccxt_price, onchain_price)
-       VALUES (?, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          submitted_price = VALUES(submitted_price),
          onchain_price = VALUES(onchain_price),
