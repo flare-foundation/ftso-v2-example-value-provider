@@ -50,6 +50,18 @@
       {
         "exchange": "kraken",
         "symbol": "SGB/USD"
+      },
+      {
+        "exchange": "bitrue",
+        "symbol": "SGB/USDT"
+      },
+      {
+        "exchange": "coinex",
+        "symbol": "SGB/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "SGB/USDT"
       }
     ]
   },
