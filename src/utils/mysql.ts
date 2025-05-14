@@ -75,6 +75,15 @@ export async function getFeedDecimals(feedName: string): Promise<number | null> 
   return rows.length > 0 ? rows[0].decimals : null;
 }
 
+export async function getFeedOnchainDecimals(feedName: string): Promise<number | null> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT decimals_onchain FROM ftso_feeds WHERE feed_name = ? LIMIT 1`,
+    [feedName]
+  );
+
+  return rows.length > 0 ? rows[0].decimals_onchain : null;
+}
+
 export async function getVotingHistory(feedName: string, limit = 5): Promise<VotingEntry[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT p.voting_round_id, p.value, p.first_quartile, p.third_quartile,
@@ -138,9 +147,22 @@ export async function storeSubmittedPrice(
          submitted_price = VALUES(submitted_price),
          ccxt_price = VALUES(ccxt_price),
          onchain_price = VALUES(onchain_price)`,
-      [feedId, votingRoundId, submittedScaled, ccxtScaled, onchainScaled]
+      [feedId, votingRoundId, submitted, ccxt, onchain]
     );
   } catch (err) {
     console.error("❌ Fehler bei storeSubmittedPrice:", err);
+  }
+}
+
+export async function updateOnchainDecimalsIfNull(feedName: string, onchainDecimals: number): Promise<void> {
+  try {
+    await pool.query(
+      `UPDATE ftso_feeds 
+       SET decimals_onchain = ?
+       WHERE feed_name = ? AND decimals_onchain IS NULL`,
+      [onchainDecimals, feedName]
+    );
+  } catch (err) {
+    console.error(`❌ Fehler beim Setzen von decimals_onchain für '${feedName}':`, err);
   }
 }

@@ -1,35 +1,64 @@
 import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { CcxtFeed } from "./ccxt-provider-service";
-import { getFeedDecimals, getFeedId, getPriceHistory, storeSubmittedPrice } from "../utils/mysql";
+import {
+  getFeedDecimals,
+  getFeedOnchainDecimals,
+  getFeedId,
+  getPriceHistory,
+  storeSubmittedPrice,
+  updateOnchainDecimalsIfNull,
+} from "../utils/mysql";
 import { adjustPrice } from "../utils/price-adjustment";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { FEED_MAP } from "../utils/feed-mapping";
 
+type OnchainFeedEntry = {
+  value: number;
+  decimals: number;
+};
+
 export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
   private currentVotingRoundId?: number;
-  private onchainPriceMap: Map<string, number> = new Map();
+  private onchainPriceMap: Map<string, OnchainFeedEntry> = new Map();
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     const result = await super.getValue(feed); // ccxt price
     this.debug(`🔎 [${feed.name}] Live-Preis (CCXT): ${result.value}`);
 
-    const decimals = (await getFeedDecimals(feed.name)) ?? 8;
-    this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${decimals}`);
+    const dbDecimals = (await getFeedDecimals(feed.name)) ?? 8;
+    let dbOnchainDecimals = await getFeedOnchainDecimals(feed.name);
 
-    const onchainPrice = this.onchainPriceMap.get(feed.name);
-    const onchainPriceScaled = onchainPrice ? Math.round(onchainPrice * 10 ** decimals) : null;
+    this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${dbDecimals}`);
+    this.debug(`ℹ️ [${feed.name}] Onchain Decimals aus DB: ${dbOnchainDecimals}`);
 
-    this.debug(`🔗 [${feed.name}] On-Chain Preis: ${onchainPrice} Scaled: ${onchainPriceScaled}`);
+    const onchain = this.onchainPriceMap.get(feed.name);
+    const onchainValueRow = onchain?.value ?? 0;
 
-    const adjustedValue = await this.adjustPrice(result.value, feed, decimals, onchainPrice);
+    if (!dbOnchainDecimals) {
+      await updateOnchainDecimalsIfNull(feed.name, onchain.decimals);
+      dbOnchainDecimals = onchain.decimals;
+    }
+
+    const onchainDecimals = onchain?.decimals ?? dbDecimals;
+    const onchainPriceDecimal = onchainValueRow / 10 ** onchainDecimals;
+    this.debug(
+      `🔗 [${feed.name}] On-Chain Preis: ${onchainPriceDecimal} (Scaled: ${onchainValueRow}, Decimals: ${onchainDecimals})`
+    );
+    const adjustedValue = await this.adjustPrice(
+      result.value,
+      feed,
+      dbDecimals,
+      dbOnchainDecimals,
+      onchainPriceDecimal
+    );
 
     this.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
 
     if (this.currentVotingRoundId) {
-      const submittedScaled = Math.round(adjustedValue * 10 ** decimals);
-      const ccxtScaled = Math.round(result.value * 10 ** decimals);
+      const submittedScaled = Math.round(adjustedValue * 10 ** dbDecimals);
+      const ccxtScaled = Math.round(result.value * 10 ** dbDecimals);
 
       if (this.isDebug())
         this.logger.debug(
@@ -37,18 +66,12 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     Round         = ${this.currentVotingRoundId}\n` +
             `     Adjusted      = ${adjustedValue} (scaled=${submittedScaled})\n` +
             `     CCXT Raw      = ${result.value} (scaled=${ccxtScaled})\n` +
-            `     Decimals      = ${decimals}\n` +
-            `     Onchain       = ${onchainPrice} (scaled=${onchainPriceScaled})`
+            `     Decimals      = ${dbDecimals}\n` +
+            `     Onchain       = ${onchainPriceDecimal} (scaled=${onchainValueRow})`
         );
 
       if (this.shouldStorePrices()) {
-        await storeSubmittedPrice(
-          feed.name,
-          this.currentVotingRoundId,
-          submittedScaled,
-          ccxtScaled,
-          onchainPriceScaled
-        );
+        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled, onchainValueRow);
       }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -68,14 +91,14 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     const onchainPrices = await this.getOnchainFeedValues();
     this.onchainPriceMap.clear();
-    for (const [symbol, value] of Object.entries(onchainPrices)) {
-      this.onchainPriceMap.set(symbol, value);
+    for (const [symbol, entry] of Object.entries(onchainPrices)) {
+      this.onchainPriceMap.set(symbol, entry);
     }
 
     return Promise.all(feeds.map(feed => this.getValue(feed)));
   }
 
-  async getOnchainFeedValues(): Promise<Record<string, number>> {
+  async getOnchainFeedValues(): Promise<Record<string, OnchainFeedEntry>> {
     const web3 = new Web3(this.getFlareRPC());
 
     const ABI: AbiItem[] = [
@@ -102,7 +125,6 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       throw new Error(`❌ Smart Contract call failed: ${(e as Error).message}`);
     }
 
-    // → Zugriff wie auf Tuple-Array simulieren
     const valuesRaw = raw[0];
     const decimalsRaw = raw[1];
     const timestampRaw = raw[2];
@@ -117,10 +139,13 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     const timestamp = Number(timestampRaw);
 
     const feedKeys = Object.keys(FEED_MAP);
-    const prices: Record<string, number> = {};
+    const prices: Record<string, OnchainFeedEntry> = {};
 
     for (let i = 0; i < feedKeys.length; i++) {
-      prices[feedKeys[i]] = values[i] / 10 ** decimals[i];
+      prices[feedKeys[i]] = {
+        value: values[i],
+        decimals: decimals[i],
+      };
     }
 
     this.debug(`📊 On-chain Preise geladen – Timestamp: ${new Date(timestamp * 1000).toISOString()}`);
@@ -131,7 +156,13 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     return super.getVolumes(feeds, window);
   }
 
-  private async adjustPrice(original: number, feed: FeedId, decimals: number, onchainPrice: number): Promise<number> {
+  private async adjustPrice(
+    original: number,
+    feed: FeedId,
+    decimals: number,
+    onchaindecimals: number,
+    onchainPrice: number
+  ): Promise<number> {
     const feedId = await getFeedId(feed.name);
     if (!feedId) return original;
     const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
@@ -141,11 +172,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       price = history?.[0]?.ftso_value;
     } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
       price = original;
-    } else if (["BTC/USD"].includes(feed.name)) {
-      console.log(onchainPrice);
-      price = adjustPrice(feed, original, onchainPrice, decimals, history, trend, this.logger);
     } else {
-      price = adjustPrice(feed, original, onchainPrice, decimals, history, trend, this.logger);
+      price = adjustPrice(feed, original, onchainPrice, decimals, onchaindecimals, history, trend, this.logger);
     }
     return price;
   }
