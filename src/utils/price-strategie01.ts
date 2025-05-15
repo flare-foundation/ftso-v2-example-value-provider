@@ -2,66 +2,95 @@ import { FeedId } from "../dto/provider-requests.dto";
 import { PriceHistoryEntry } from "./mysql";
 import { ILogger } from "./ILogger";
 
+/** === Parameter ============================== */
+const MAX_HISTORY = 10; // wie viele Runden einbeziehen
+const DECAY_LAMBDA = 0.075; // Gewichts-Halbwertszeit ~ ln(2)/λ Runden
+const ONCHAIN_BLEND = 0.25; // Gewicht, falls |Δ| > THRESHOLD_BPS
+const THRESHOLD_BPS = 15; // 0,15 % Schwellwert für On-Chain-Blend
+const JITTER_BPS = 0.05; // ±0,05 bp = 0,0005 %
+/** ============================================ */
+
 export async function priceStrategie01(
   feed: FeedId,
-  ccxtprice_live: number,
-  onchainprice_live: number,
-  decimals: number,
-  onchaindecimals: number,
+  ccxtLive: number,
+  onchainLive: number,
+  _decimals: number,
+  _onchainDecimals: number,
   history: PriceHistoryEntry[],
   logger?: ILogger
 ): Promise<number> {
   try {
-    const ccxtPrice = ccxtprice_live;
-
-    if (logger) {
-      logger.debug(`\n########################## [${feed.name}] Preis-Historie Start##########################\n`);
-
-      history.forEach((entry, i) => {
-        const {
-          ccxt_price,
-          ftso_value,
-          onchain_price,
-          submitted,
-          voting_round_id,
-          first_quartile,
-          third_quartile,
-          low,
-          high,
-        } = entry;
-
-        const diffCcxt = ((ccxt_price - ftso_value) / ftso_value) * 100;
-        const diffOnchain = ((onchain_price - ftso_value) / ftso_value) * 100;
-        const diffSubmitted = submitted !== null ? ((submitted - ftso_value) / ftso_value) * 100 : null;
-
-        logger.debug(
-          `#${(i + 1).toString().padStart(2)} | Round: ${voting_round_id}\n` +
-            `  CCXT Price      : ${ccxt_price.toFixed(onchaindecimals).padEnd(14)} (Δ ${diffCcxt.toFixed(4)}%)\n` +
-            `  FTSO Value      : ${ftso_value.toFixed(onchaindecimals)}\n` +
-            `  Onchain Price   : ${onchain_price.toFixed(onchaindecimals).padEnd(14)} (Δ ${diffOnchain.toFixed(4)}%)\n` +
-            (submitted !== null
-              ? `  Submitted       : ${submitted.toFixed(onchaindecimals).padEnd(14)} (Δ ${diffSubmitted!.toFixed(4)}%)\n`
-              : "") +
-            `  Quartile (1st)  : ${first_quartile.toFixed(onchaindecimals)}\n` +
-            `  Quartile (3rd)  : ${third_quartile.toFixed(onchaindecimals)}\n` +
-            `  Low / High      : ${low.toFixed(onchaindecimals)} / ${high.toFixed(onchaindecimals)}\n` +
-            `--------------------------------------------------------------------------------`
-        );
+    /* ---------- 1. History vorbereiten ----------------------------------- */
+    const trimmed = history
+      .slice(0, MAX_HISTORY) // jüngste N Runden
+      .map((h, i) => ({
+        price: h.ccxt_price,
+        weight: Math.exp(-DECAY_LAMBDA * i), // jüngere > ältere
+      }))
+      // Outlier via Median-Absolute-Deviation k=3
+      .filter(({ price }, _, arr) => {
+        const med = median(arr.map(a => a.price));
+        const mad = median(arr.map(a => Math.abs(a.price - med))) || 1e-9;
+        return Math.abs(price - med) / mad < 3;
       });
-      logger.debug(`\n########################## [${feed.name}] Preis-Historie  END ##########################\n`);
+
+    const histMedian = weightedMedian(trimmed);
+
+    /* ---------- 2. Live-Preis vs. History mergen ------------------------- */
+    // 60 % Live-Preis, 40 % History-Median (kannst du via ENV shiften)
+    let adjusted = 0.6 * ccxtLive + 0.4 * histMedian;
+
+    /* ---------- 3. On-Chain als Fallback-Korrektor ------------------------ */
+    const relDiffBps = Math.abs((adjusted - onchainLive) / adjusted) * 1e4;
+    if (relDiffBps > THRESHOLD_BPS) {
+      adjusted = (1 - ONCHAIN_BLEND) * adjusted + ONCHAIN_BLEND * onchainLive;
+    }
+
+    /* ---------- 4. Mini-Jitter gegen Reward-Splits ----------------------- */
+    const jitter = (Math.random() - 0.5) * JITTER_BPS * 1e-4 * adjusted;
+    adjusted += jitter;
+
+    /* ---------- 5. Logging ------------------------------------------------ */
+    if (logger) {
       logger.debug(
-        `\n📊 [${feed.name}] Aktuelle Preisanpassung\n` +
+        `\n######################################################################\n` +
+          `📊 [${feed.name}] Aktuelle Preisanpassung (priceStrategie01)\n` +
           `────────────────────────────────────────────\n` +
-          `   Adjusted Price       : ${ccxtPrice.toFixed(onchaindecimals)}\n` +
-          `   CCXT Price (live)    : ${ccxtPrice.toFixed(onchaindecimals)}\n` +
-          `   ONCHAIN Price (live) : ${onchainprice_live.toFixed(onchaindecimals)}\n` +
+          `   Adjusted Price       : ${adjusted}\n` +
+          `   CCXT Price (live)    : ${ccxtLive}\n` +
+          `   Hist. W-Median       : ${histMedian}\n` +
+          `   ONCHAIN Price (live) : ${onchainLive}\n` +
+          `   |Δadj-onchain| (bps) : ${relDiffBps.toFixed(2)}\n` +
           `######################################################################\n`
       );
     }
 
-    return ccxtPrice;
+    return adjusted;
   } catch (err) {
     logger?.error(`❌ Fehler in adjustPrice(${feed.name}):`, err);
-    return ccxtprice_live;
+    return ccxtLive;
   }
+}
+
+/* ---------- Hilfsfunktionen --------------------------------------------- */
+
+/** einfacher Median – O(n log n) reicht bei ≤ 30 Elementen */
+function median(arr: number[]): number {
+  if (arr.length === 0) return NaN;
+  const s = [...arr].sort((a, b) => a - b);
+  const mid = s.length >> 1;
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+
+/** gewichteter Median (s.u.) */
+function weightedMedian(data: { price: number; weight: number }[]): number {
+  if (!data.length) return NaN;
+  const sorted = [...data].sort((a, b) => a.price - b.price);
+  const total = sorted.reduce((sum, p) => sum + p.weight, 0);
+  let acc = 0;
+  for (const { price, weight } of sorted) {
+    acc += weight;
+    if (acc >= total / 2) return price;
+  }
+  return sorted[sorted.length - 1].price;
 }

@@ -30,9 +30,6 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     const dbDecimals = (await getFeedDecimals(feed.name)) ?? 8;
     let dbOnchainDecimals = await getFeedOnchainDecimals(feed.name);
 
-    this.debug(`ℹ️ [${feed.name}] Decimals aus DB: ${dbDecimals}`);
-    this.debug(`ℹ️ [${feed.name}] Onchain Decimals aus DB: ${dbOnchainDecimals}`);
-
     const onchain = this.onchainPriceMap.get(feed.name);
     const onchainValueRow = onchain?.value ?? 0;
 
@@ -44,7 +41,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     const onchainDecimals = onchain?.decimals ?? dbDecimals;
     const onchainPriceDecimal = onchainValueRow / 10 ** onchainDecimals;
     this.debug(
-      `🔗 [${feed.name}] On-Chain Preis: ${onchainPriceDecimal} (Scaled: ${onchainValueRow}, Decimals: ${onchainDecimals})`
+      `🔗 [${feed.name}] Live-Preis (On-Chain): ${onchainPriceDecimal} (Scaled: ${onchainValueRow}, Decimals: ${onchainDecimals})`
     );
     // Hier kann man seine Preisstrategie Bauen Aktuell wird auf die Fungtion PriceStrategie01 verlinkt
     const adjustedValue = await this.PriceStrategie(
@@ -55,12 +52,12 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       onchainPriceDecimal
     );
 
-    this.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
+    //this.debug(`📝 [${feed.name}] Aktuelle VotingRoundId = ${this.currentVotingRoundId}`);
 
     if (this.currentVotingRoundId) {
       const submittedScaled = Math.round(adjustedValue * 10 ** dbDecimals);
       const ccxtScaled = Math.round(result.value * 10 ** dbDecimals);
-
+      /*
       if (this.isDebug())
         this.logger.debug(
           `📤 [${feed.name}] Speichere Preisabgabe:\n` +
@@ -70,9 +67,17 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
             `     Decimals      = ${dbDecimals}\n` +
             `     Onchain       = ${onchainPriceDecimal} (scaled=${onchainValueRow})`
         );
-
+      */
       if (this.shouldStorePrices()) {
-        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled, onchainValueRow);
+        await storeSubmittedPrice(
+          feed.name,
+          this.currentVotingRoundId,
+          submittedScaled,
+          ccxtScaled,
+          onchainValueRow,
+          dbDecimals,
+          dbOnchainDecimals
+        );
       }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -170,11 +175,11 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
-      price = history?.[0]?.ftso_value;
-    } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
-      price = ccxt_price;
-    } else {
+      price = history?.[0]?.ftso_price;
+    } else if (["BNB/USD"].includes(feed.name)) {
       price = priceStrategie01(feed, ccxt_price, onchainPrice, decimals, onchaindecimals, history, this.logger);
+    } else {
+      price = ccxt_price;
     }
     return price;
   }

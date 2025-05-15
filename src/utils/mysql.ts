@@ -28,7 +28,7 @@ export type PriceHistoryEntry = {
   ccxt_price: number;
   onchain_price: number;
   submitted: number;
-  ftso_value: number;
+  ftso_price: number;
   decimals: number;
   first_quartile: number;
   third_quartile: number;
@@ -42,7 +42,7 @@ export type ExtendedPriceHistoryEntry = {
   ccxt_price: number;
   onchain_price: number;
   submitted: number;
-  ftso_value: number;
+  ftso_price: number;
   first_quartile: number;
   third_quartile: number;
   low: number;
@@ -95,7 +95,7 @@ export async function getPriceHistory(feedId: number, limit = 30): Promise<Exten
       ccxt_price: Number(r.ccxt_price) / 10 ** d,
       onchain_price: Number(r.onchain_price) / 10 ** dOnchain,
       submitted: Number(r.submitted) / 10 ** d,
-      ftso_value: Number(r.ftso_value) / 10 ** d,
+      ftso_price: Number(r.ftso_price) / 10 ** d,
       first_quartile: Number(r.first_quartile) / 10 ** d,
       third_quartile: Number(r.third_quartile) / 10 ** d,
       low: Number(r.low) / 10 ** d,
@@ -156,7 +156,9 @@ export async function storeSubmittedPrice(
   votingRoundId: number,
   submitted: number,
   ccxt: number,
-  onchain: number
+  onchain: number,
+  Decimals: number,
+  OnchainDecimals: number
 ): Promise<void> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
@@ -170,13 +172,9 @@ export async function storeSubmittedPrice(
 
     const feedId = rows[0].id;
 
-    const scale = 1e8; // FIXED scale to match ftso_prices
-    const submittedScaled = Math.round(submitted * scale);
-    const ccxtScaled = Math.round(ccxt * scale);
-    const onchainScaled = Math.round(onchain * scale);
-    console.debug(
-      `📦 Speichere Preis (1e8): submitted=${submitted} → ${submittedScaled}, ccxt=${ccxt} → ${ccxtScaled}, onchain=${onchain} → ${onchainScaled}`
-    );
+    //console.debug(
+    //  `📦 Speichere Preis: VotingRound ${votingRoundId} (BIGINT Dezimal1 ${Decimals} 2: ${OnchainDecimals}): submitted=${submitted}, ccxt=${ccxt}, onchain=${onchain}`
+    //);
 
     await pool.query(`INSERT IGNORE INTO voting_rounds (id) VALUES (?)`, [votingRoundId]);
 
