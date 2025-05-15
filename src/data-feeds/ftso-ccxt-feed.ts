@@ -69,15 +69,7 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
         );
       */
       if (this.shouldStorePrices()) {
-        await storeSubmittedPrice(
-          feed.name,
-          this.currentVotingRoundId,
-          submittedScaled,
-          ccxtScaled,
-          onchainValueRow,
-          dbDecimals,
-          dbOnchainDecimals
-        );
+        await storeSubmittedPrice(feed.name, this.currentVotingRoundId, submittedScaled, ccxtScaled, onchainValueRow);
       }
     } else {
       this.logger.warn(`⚠️ [${feed.name}] Keine VotingRoundId gesetzt – Preis wird NICHT gespeichert.`);
@@ -171,14 +163,35 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
   ): Promise<number> {
     const feedId = await getFeedId(feed.name);
     if (!feedId) return ccxt_price;
-    const [history] = await Promise.all([getPriceHistory(feedId, 30)]);
-
+    const history = await getPriceHistory(feedId, 30);
+    //console.debug("[DEBUG] History raw:\n" + JSON.stringify(history, null, 2));
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
+      if (this.isDebug()) {
+        this.logger.debug(
+          `\n######################################################################\n` +
+            `📊 [${feed.name}] Aktuelle Preisanpassung (Strategie price last VotingRound)\n` +
+            `────────────────────────────────────────────\n` +
+            `   Adjusted Price       : ${history?.[0]?.ftso_price}\n` +
+            `   CCXT Price (live)    : ${ccxt_price}\n` +
+            `   ONCHAIN Price (live) : ${onchainPrice}\n` +
+            `######################################################################\n`
+        );
+      }
+
       price = history?.[0]?.ftso_price;
     } else if (["BNB/USD"].includes(feed.name)) {
       price = priceStrategie01(feed, ccxt_price, onchainPrice, decimals, onchaindecimals, history, this.logger);
     } else {
+      this.logger.debug(
+        `\n######################################################################\n` +
+          `📊 [${feed.name}] Aktuelle Preisanpassung (Default CCXT Price)\n` +
+          `────────────────────────────────────────────\n` +
+          `   Adjusted Price       : ${ccxt_price}\n` +
+          `   CCXT Price (live)    : ${ccxt_price}\n` +
+          `   ONCHAIN Price (live) : ${onchainPrice}\n` +
+          `######################################################################\n`
+      );
       price = ccxt_price;
     }
     return price;

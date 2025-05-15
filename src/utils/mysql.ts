@@ -66,7 +66,7 @@ export async function getPriceHistory(feedId: number, limit = 30): Promise<Exten
       ps.ccxt_price,
       ps.onchain_price,
       ps.submitted_price AS submitted,
-      fp.value AS ftso_value,
+      fp.value AS ftso_price,
       fp.first_quartile,
       fp.third_quartile,
       fp.low,
@@ -156,9 +156,7 @@ export async function storeSubmittedPrice(
   votingRoundId: number,
   submitted: number,
   ccxt: number,
-  onchain: number,
-  Decimals: number,
-  OnchainDecimals: number
+  onchain: number
 ): Promise<void> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
