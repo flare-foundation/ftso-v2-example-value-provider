@@ -9,7 +9,7 @@ import {
   storeSubmittedPrice,
   updateOnchainDecimalsIfNull,
 } from "../utils/mysql";
-import { adjustPrice } from "../utils/price-adjustment";
+import { priceStrategie01 } from "../utils/price-strategie01";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { FEED_MAP } from "../utils/feed-mapping";
@@ -46,7 +46,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     this.debug(
       `🔗 [${feed.name}] On-Chain Preis: ${onchainPriceDecimal} (Scaled: ${onchainValueRow}, Decimals: ${onchainDecimals})`
     );
-    const adjustedValue = await this.adjustPrice(
+    // Hier kann man seine Preisstrategie Bauen Aktuell wird auf die Fungtion PriceStrategie01 verlinkt
+    const adjustedValue = await this.PriceStrategie(
       result.value,
       feed,
       dbDecimals,
@@ -156,60 +157,26 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     return super.getVolumes(feeds, window);
   }
 
-  private async adjustPrice(
-    original: number,
+  private async PriceStrategie(
+    ccxt_price: number,
     feed: FeedId,
     decimals: number,
     onchaindecimals: number,
     onchainPrice: number
   ): Promise<number> {
     const feedId = await getFeedId(feed.name);
-    if (!feedId) return original;
-    const [history, trend] = await Promise.all([getPriceHistory(feedId, 30), this.getTrend15s(feed.name)]);
+    if (!feedId) return ccxt_price;
+    const [history] = await Promise.all([getPriceHistory(feedId, 30)]);
 
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
       price = history?.[0]?.ftso_value;
     } else if (["ADA/USD", "AAVE/USD", "SGB/USD"].includes(feed.name)) {
-      price = original;
+      price = ccxt_price;
     } else {
-      price = adjustPrice(feed, original, onchainPrice, decimals, onchaindecimals, history, trend, this.logger);
+      price = priceStrategie01(feed, ccxt_price, onchainPrice, decimals, onchaindecimals, history, this.logger);
     }
     return price;
-  }
-
-  private async getTrend15s(feedName: string): Promise<"up" | "down" | "flat"> {
-    const config = this.config.find(f => f.feed.name === feedName);
-    if (!config || config.sources.length === 0) {
-      this.logger.warn(`❗ Kein Source-Eintrag für ${feedName} gefunden.`);
-      return "flat";
-    }
-
-    const prices: number[] = [];
-
-    for (const { exchange, symbol } of config.sources) {
-      const priceMap = this.latestPrice.get(symbol);
-      const info = priceMap?.get(exchange);
-      if (!info) continue;
-
-      const age = Date.now() - info.time;
-      if (age > 30_000) continue;
-
-      prices.push(info.value);
-    }
-
-    if (prices.length < 2) return "flat";
-
-    const [first, last] = [prices[0], prices.at(-1)!];
-    const pct = ((last - first) / first) * 100;
-    const trend = pct > 0.03 ? "up" : pct < -0.03 ? "down" : "flat";
-
-    if (this.isDebug()) {
-      this.logger.debug(`[${feedName}] 🔍 Preisentwicklung (live): ${first} → ${last} = ${pct.toFixed(4)}%`);
-      this.logger.debug(`[${feedName}] 🔍 Berechneter Trend: ${trend.toUpperCase()} (${pct.toFixed(4)}%)`);
-    }
-
-    return trend;
   }
 
   private getFlareRPC(): string {

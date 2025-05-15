@@ -30,6 +30,26 @@ export type PriceHistoryEntry = {
   submitted: number;
   ftso_value: number;
   decimals: number;
+  first_quartile: number;
+  third_quartile: number;
+  low: number;
+  high: number;
+};
+
+export type ExtendedPriceHistoryEntry = {
+  voting_round_id: number;
+  timestamp: number;
+  ccxt_price: number;
+  onchain_price: number;
+  submitted: number;
+  ftso_value: number;
+  first_quartile: number;
+  third_quartile: number;
+  low: number;
+  high: number;
+  turnout_bips: number;
+  decimals: number;
+  decimals_onchain: number;
 };
 
 export async function getFeedId(feedName: string): Promise<number | undefined> {
@@ -37,19 +57,27 @@ export async function getFeedId(feedName: string): Promise<number | undefined> {
   return rows.length > 0 ? rows[0].id : undefined;
 }
 
-export async function getPriceHistory(feedId: number, limit = 30): Promise<PriceHistoryEntry[]> {
+export async function getPriceHistory(feedId: number, limit = 30): Promise<ExtendedPriceHistoryEntry[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
     `
     SELECT 
       ps.voting_round_id,
+      vr.timestamp,
       ps.ccxt_price,
       ps.onchain_price,
       ps.submitted_price AS submitted,
       fp.value AS ftso_value,
-      ff.decimals
+      fp.first_quartile,
+      fp.third_quartile,
+      fp.low,
+      fp.high,
+      fp.turnout_bips,
+      ff.decimals,
+      ff.decimals_onchain
     FROM price_submissions ps
     JOIN ftso_prices fp ON ps.feed_id = fp.feed_id AND ps.voting_round_id = fp.voting_round_id
     JOIN ftso_feeds ff ON ps.feed_id = ff.id
+    JOIN voting_rounds vr ON ps.voting_round_id = vr.id
     WHERE ps.feed_id = ?
     ORDER BY ps.voting_round_id DESC
     LIMIT ?
@@ -57,14 +85,26 @@ export async function getPriceHistory(feedId: number, limit = 30): Promise<Price
     [feedId, limit]
   );
 
-  return rows.map(r => ({
-    voting_round_id: Number(r.voting_round_id),
-    ccxt_price: Number(r.ccxt_price) / 1e8,
-    onchain_price: Number(r.onchain_price) / 1e8,
-    submitted: Number(r.submitted) / 1e8,
-    ftso_value: Number(r.ftso_value) / 10 ** r.decimals,
-    decimals: r.decimals,
-  }));
+  return rows.map(r => {
+    const d = r.decimals;
+    const dOnchain = r.decimals_onchain ?? d;
+
+    return {
+      voting_round_id: Number(r.voting_round_id),
+      timestamp: Number(r.timestamp),
+      ccxt_price: Number(r.ccxt_price) / 10 ** d,
+      onchain_price: Number(r.onchain_price) / 10 ** dOnchain,
+      submitted: Number(r.submitted) / 10 ** d,
+      ftso_value: Number(r.ftso_value) / 10 ** d,
+      first_quartile: Number(r.first_quartile) / 10 ** d,
+      third_quartile: Number(r.third_quartile) / 10 ** d,
+      low: Number(r.low) / 10 ** d,
+      high: Number(r.high) / 10 ** d,
+      turnout_bips: Number(r.turnout_bips),
+      decimals: d,
+      decimals_onchain: dOnchain,
+    };
+  });
 }
 
 export async function getFeedDecimals(feedName: string): Promise<number | null> {
