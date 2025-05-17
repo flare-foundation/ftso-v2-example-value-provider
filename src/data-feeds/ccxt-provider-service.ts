@@ -25,7 +25,7 @@ interface FeedConfig {
   }[];
 }
 
-interface PriceInfo {
+export interface PriceInfo {
   value: number;
   time: number;
   exchange: string;
@@ -77,6 +77,23 @@ export class CcxtFeed implements BaseDataFeed {
       this.logger.error(`❌ Fehler beim Schreiben von fallback-prices.json:`, e);
     }
   }
+
+  public getLatestPriceMap(): Map<string, Map<string, PriceInfo>> {
+    return this.latestPrice;
+  }
+
+  public getPriceInfo(symbol: string, exchange: string): PriceInfo | undefined {
+    return this.latestPrice.get(symbol)?.get(exchange);
+  }
+
+  public getVolumesMap(): Map<string, Map<string, VolumeStore>> {
+    return this.volumes;
+  }
+
+  public getVolumeStore(symbol: string, exchange: string): VolumeStore | undefined {
+    return this.volumes.get(symbol)?.get(exchange);
+  }
+
 
   async getSafeFeedPrice(feedId: FeedId): Promise<number> {
     const now = Date.now();
@@ -535,6 +552,8 @@ function feedsEqual(a: FeedId, b: FeedId): boolean {
   return a.category === b.category && a.name === b.name;
 }
 
+
+
 async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) {
   const proExchanges = [
     //"bybit",
@@ -542,19 +561,19 @@ async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) 
     //"gate",
     //"htx",
     //"kucoin",
-    //"okx",
+    "okx",
     //"bitstamp",
     //"kraken",
     //"bitget",
     //"binance",
     //"coinbase",
-    "bingx",
-    "bitfinex",
-    "mexc",
-    "binanceus",
-    "bitmart",
-    "ascendex",
-    "probit",
+    //"bingx",
+    //"bitfinex",
+    //"mexc",
+    //"binanceus",
+    //"bitmart",
+    //"ascendex",
+    //"probit",
     //
     //"bitmex",
   ];

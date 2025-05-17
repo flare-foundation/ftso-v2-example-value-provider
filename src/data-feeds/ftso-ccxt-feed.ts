@@ -181,7 +181,17 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
 
       price = history?.[0]?.ftso_price;
     } else if (["BNB/USD"].includes(feed.name)) {
-      price = priceStrategie01(feed, ccxt_price, onchainPrice, decimals, onchaindecimals, history, this.logger);
+      price = await priceStrategie01(
+        feed,
+        ccxt_price,
+        onchainPrice,
+        decimals,
+        onchaindecimals,
+        history,
+        this.logger,
+        this.getLatestPriceMap(),
+        this.getVolumesMap()
+      );
     } else {
       this.logger.debug(
         `\n######################################################################\n` +
