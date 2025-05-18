@@ -159,8 +159,7 @@ export async function priceStrategie03(
 
     }
 
-    const adjusted: number =
-      combinedAverage4on ?? combinedAverage3on ?? combinedAverage2on ?? combinedAverage ?? NaN;
+    const adjusted: number = combinedAverage4on ?? combinedAverage3on ?? combinedAverage2on ?? combinedAverage ?? NaN;
 
     debugLog.push(`\n📊 Ergebnis:`);
     debugLog.push(`  Adjusted Price           : ${adjusted}`);
