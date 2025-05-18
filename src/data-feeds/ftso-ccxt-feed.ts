@@ -10,6 +10,8 @@ import {
   updateOnchainDecimalsIfNull,
 } from "../utils/mysql";
 import { priceStrategie01 } from "../utils/price-strategie01";
+import { priceStrategie02 } from "../utils/price-strategie02";
+import { priceStrategie03 } from "../utils/price-strategie03";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { FEED_MAP } from "../utils/feed-mapping";
@@ -162,15 +164,17 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
     onchainPrice: number
   ): Promise<number> {
     const feedId = await getFeedId(feed.name);
+    const feedIdUsdt = await getFeedId("USDT/USD");
     if (!feedId) return ccxt_price;
     const history = await getPriceHistory(feedId, 30);
+    const history_usdt = await getPriceHistory(feedIdUsdt, 1);
     //console.debug("[DEBUG] History raw:\n" + JSON.stringify(history, null, 2));
     let price: number | PromiseLike<number>;
     if (["USDT/USD", "USDC/USD", "USDX/USD", "USDS/USD"].includes(feed.name)) {
       if (this.isDebug()) {
         this.logger.debug(
           `\n######################################################################\n` +
-            `📊 [${feed.name}] Aktuelle Preisanpassung (Strategie price last VotingRound)\n` +
+            `📊 [${feed.name}] Aktuelle Preisanpassung---)\n` +
             `────────────────────────────────────────────\n` +
             `   Adjusted Price       : ${history?.[0]?.ftso_price}\n` +
             `   CCXT Price (live)    : ${ccxt_price}\n` +
@@ -180,8 +184,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
       }
 
       price = history?.[0]?.ftso_price;
-    } else if (["BNB/USD"].includes(feed.name)) {
-      price = await priceStrategie01(
+    } else if (["SGB/USD"].includes(feed.name)) {
+      price = await priceStrategie03(
         feed,
         ccxt_price,
         onchainPrice,
@@ -190,7 +194,8 @@ export class FtsoCcxtFeed extends CcxtFeed implements BaseDataFeed {
         history,
         this.logger,
         this.getLatestPriceMap(),
-        this.getVolumesMap()
+        this.getVolumesMap(),
+        history_usdt
       );
     } else {
       this.logger.debug(

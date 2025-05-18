@@ -1,21 +1,20 @@
 [
   {
-    "feed": { "category": 1, "name": "FLR/USD" },
+    "feed": {
+      "category": 1,
+      "name": "FLR/USD"
+    },
     "config": {
       "outlierThresholdPercent": 0.5,
       "useVolumeWeighting": true
     },
     "sources": [
       {
-        "exchange": "bybit",
+        "exchange": "gate",
         "symbol": "FLR/USDT"
       },
       {
-        "exchange": "cryptocom",
-        "symbol": "FLR/USD"
-      },
-      {
-        "exchange": "gate",
+        "exchange": "okx",
         "symbol": "FLR/USDT"
       },
       {
@@ -25,38 +24,33 @@
       {
         "exchange": "kucoin",
         "symbol": "FLR/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "FLR/USDT"
       }
     ]
   },
   {
-    "feed": { "category": 1, "name": "SGB/USD" },
+    "feed": {
+      "category": 1,
+      "name": "SGB/USD"
+    },
     "config": {
       "outlierThresholdPercent": 0.5,
       "useVolumeWeighting": true
     },
     "sources": [
       {
-        "exchange": "bitstamp",
+        "exchange": "kraken",
         "symbol": "SGB/USD"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "SGB/USDT"
       },
       {
         "exchange": "gate",
         "symbol": "SGB/USDT"
       },
       {
-        "exchange": "kraken",
-        "symbol": "SGB/USD"
-      },
-      {
         "exchange": "coinex",
-        "symbol": "SGB/USDT"
-      },
-      {
-        "exchange": "mexc",
         "symbol": "SGB/USDT"
       }
     ]
@@ -623,10 +617,6 @@
       },
       {
         "exchange": "cryptocom",
-        "symbol": "USDT/USD"
-      },
-      {
-        "exchange": "ascendex",
         "symbol": "USDT/USD"
       },
       {
@@ -1611,35 +1601,42 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "AAVE/USD" },
+    "feed": {
+      "category": 1,
+      "name": "AAVE/USD"
+    },
     "config": {
       "outlierThresholdPercent": 0.5,
       "useVolumeWeighting": true
     },
     "sources": [
-
-      {
-        "exchange": "mexc",
-        "symbol": "AAVE/USDT"
-      },
       {
         "exchange": "bitmart",
         "symbol": "AAVE/USDT"
       },
       {
-        "exchange": "probit",
+        "exchange": "mexc",
         "symbol": "AAVE/USDT"
       },
       {
         "exchange": "p2b",
         "symbol": "AAVE/USDT"
+      },{
+        "exchange": "binance",
+        "symbol": "AAVE/USDT"
+      },
+      {
+        "exchange": "probit",
+        "symbol": "AAVE/USDT"
       }
-
-
     ]
   },
+
   {
-    "feed": { "category": 1, "name": "ONDO/USD" },
+    "feed": {
+      "category": 1,
+      "name": "ONDO/USD"
+    },
     "config": {
       "outlierThresholdPercent": 0.5,
       "useVolumeWeighting": true
@@ -1650,31 +1647,18 @@
         "symbol": "ONDO/USDT"
       },
       {
-        "exchange": "bingx",
-        "symbol": "ONDO/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "ONDO/USDT"
-      },
-      {
         "exchange": "bitmart",
         "symbol": "ONDO/USDT"
       },
       {
-        "exchange": "bybit",
-        "symbol": "ONDO/USDT"
-      },
-      {
-        "exchange": "cryptocom",
+        "exchange": "htx",
         "symbol": "ONDO/USDT"
       },
       {
         "exchange": "gate",
         "symbol": "ONDO/USDT"
-      },
-      {
-        "exchange": "htx",
+      },{
+        "exchange": "bingx",
         "symbol": "ONDO/USDT"
       }
     ]

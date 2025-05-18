@@ -557,15 +557,15 @@ function feedsEqual(a: FeedId, b: FeedId): boolean {
 async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) {
   const proExchanges = [
     //"bybit",
+    //"binance",
+    //"kucoin",
+    //"okx",
     //"cryptocom",
     //"gate",
     //"htx",
-    //"kucoin",
-    "okx",
     //"bitstamp",
     //"kraken",
     //"bitget",
-    //"binance",
     //"coinbase",
     //"bingx",
     //"bitfinex",

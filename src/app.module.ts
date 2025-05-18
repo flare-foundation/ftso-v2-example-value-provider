@@ -7,6 +7,7 @@ import { BaseDataFeed } from "./data-feeds/base-feed";
 import { FixedFeed } from "./data-feeds/fixed-feed";
 import { FtsoCcxtFeed } from "./data-feeds/ftso-ccxt-feed";
 import dotenv from "dotenv";
+import { CustomWsFeed } from "./data-feeds/custom-ws-feed";
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ dotenv.config();
           const ftsoCcxtFeed = new FtsoCcxtFeed();
           await ftsoCcxtFeed.start();
           dataFeed = ftsoCcxtFeed;
+        } else if (providerImpl === "customws") {
+          dataFeed = new CustomWsFeed();
         } else {
           const ccxtFeed = new CcxtFeed();
           await ccxtFeed.start();
