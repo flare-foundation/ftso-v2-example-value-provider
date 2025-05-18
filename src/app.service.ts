@@ -3,15 +3,16 @@ import { FeedId, FeedValueData, FeedVolumeData } from "./dto/provider-requests.d
 import { BaseDataFeed } from "./data-feeds/base-feed";
 
 @Injectable()
-export class ExampleProviderService {
+export class ProviderService {
   constructor(private readonly dataFeed: BaseDataFeed) {}
 
   async getValue(feed: FeedId): Promise<FeedValueData> {
     return this.dataFeed.getValue(feed);
   }
 
-  async getValues(feeds: FeedId[]): Promise<FeedValueData[]> {
-    return this.dataFeed.getValues(feeds);
+  async getValues(feeds: FeedId[], votingRoundId?: number): Promise<FeedValueData[]> {
+    // 🧠 votingRoundId an DataFeed weiterreichen
+    return this.dataFeed.getValues(feeds, votingRoundId);
   }
 
   async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {

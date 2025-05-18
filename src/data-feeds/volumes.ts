@@ -5,9 +5,13 @@ const HISTORY_SEC = 3600;
 
 export class VolumeStore {
   private readonly logger = new Logger(VolumeStore.name);
-  // Circular buffer storing volume per second history.
   private readonly volumeSec = new Array<number>(HISTORY_SEC).fill(0);
   private lastTs: number | undefined = undefined;
+
+  /** Test helper to access volumeSec (not for production!) */
+  __getVolumeSecArrayForTestOnly(): number[] {
+    return this.volumeSec;
+  }
 
   processTrades(trades: Trade[]) {
     for (const trade of trades) {
@@ -33,6 +37,7 @@ export class VolumeStore {
       const volume = this.calculateVolume(trade);
       this.volumeSec[tSec % HISTORY_SEC] += volume;
       this.lastTs = trade.timestamp;
+      //this.logger.debug(`Trade verarbeitet für ${trade.symbol} mit Volumen: ${volume}`);
     }
   }
 

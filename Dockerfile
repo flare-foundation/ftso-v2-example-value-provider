@@ -3,7 +3,7 @@ FROM node:18-slim AS nodemodules
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --network-timeout 100000
+RUN yarn install --frozen-lockfile --ignore-engines --network-timeout 100000
 
 FROM node:18-slim AS build
 

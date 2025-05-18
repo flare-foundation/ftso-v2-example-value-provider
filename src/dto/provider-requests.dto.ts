@@ -18,6 +18,14 @@ export class FeedValueData {
   value: number;
 }
 
+export class FeedConfig {
+  feed: FeedId;
+  sources: {
+    exchange: string;
+    symbol: string;
+  }[];
+}
+
 export class FeedVolumeData {
   feed: FeedId;
   volumes: Volume[];
