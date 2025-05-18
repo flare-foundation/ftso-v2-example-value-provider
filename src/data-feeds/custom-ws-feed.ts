@@ -40,7 +40,8 @@ type OrderBookMap = Map<string, Map<string, OrderBook>>;
 
 export class CustomWsFeed implements BaseDataFeed {
   private readonly logger = new Logger(CustomWsFeed.name);
-  private readonly wsUrl = "ws://10.10.1.206:8765/client?key=CLIENT_KEY_1";
+  private readonly wsBaseUrl = "ws://10.10.1.206:8765/client";
+  private readonly wsKey = "CLIENT_KEY_1";
 
   private readonly tradeMap: TradeMap = new Map();
   private readonly tickerMap: TickerMap = new Map(); // Neu
@@ -53,7 +54,9 @@ export class CustomWsFeed implements BaseDataFeed {
   constructor() {
     this.logger.log("Connecting to custom WebSocket feed...");
     this.loadFallbackPrices();
-    this.connect();
+    this.connect("trade");
+    this.connect("ticker");
+    this.connect("book");
     this.startCleanupLoop();
   }
 
@@ -84,11 +87,11 @@ export class CustomWsFeed implements BaseDataFeed {
     }
   }
 
-  private connect() {
-    const ws = new WebSocket(this.wsUrl);
+  private connect(type: "trade" | "ticker" | "book") {
+    const ws = new WebSocket(`${this.wsBaseUrl}?key=${this.wsKey}&type=${type}`);
 
     ws.on("open", () => {
-      this.logger.log("Connected to custom WebSocket server.");
+      this.logger.log(`Connected to feed type: ${type}`);
     });
 
     ws.on("message", (data: string) => {
@@ -169,8 +172,12 @@ export class CustomWsFeed implements BaseDataFeed {
     });
 
     ws.on("close", () => {
-      this.logger.warn("WebSocket closed, reconnecting in 5s");
-      setTimeout(() => this.connect(), 5000);
+      this.logger.warn(`WebSocket for type ${type} closed, reconnecting in 5s`);
+      setTimeout(() => this.connect(type), 5000);  // <- fix hier
+    });
+
+    ws.on("error", (err) => {
+      this.logger.error(`WebSocket error [${type}]:`, err);
     });
   }
 
