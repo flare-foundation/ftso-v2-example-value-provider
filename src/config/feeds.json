@@ -1012,31 +1012,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "DAI/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "DAI/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "USDS/USD" },
     "sources": [
       {
@@ -1467,15 +1442,6 @@
       {
         "exchange": "bybit",
         "symbol": "AAVE/USDT"
-      }
-    ]
-  },
-  {
-    "feed": { "category": 1, "name": "FTM/USD" },
-    "sources": [
-      {
-        "exchange": "bitstamp",
-        "symbol": "FTM/USD"
       }
     ]
   },
