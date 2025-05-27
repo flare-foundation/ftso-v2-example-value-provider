@@ -1024,10 +1024,6 @@
       },
       {
         "exchange": "cryptocom",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
         "symbol": "DAI/USD"
       },
       {
@@ -1110,11 +1106,11 @@
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USD"
       }
     ]
@@ -1478,15 +1474,7 @@
     "feed": { "category": 1, "name": "FTM/USD" },
     "sources": [
       {
-        "exchange": "kraken",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitfinex2",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitso",
+        "exchange": "bitstamp",
         "symbol": "FTM/USD"
       }
     ]
@@ -1553,7 +1541,7 @@
       },
       {
         "exchange": "kraken",
-        "symbol": "TAO/USDT"
+        "symbol": "TAO/USD"
       }
     ]
   },
