@@ -1012,35 +1012,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "DAI/USD" },
-    "sources": [
-      {
-        "exchange": "binance",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "bitget",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "cryptocom",
-        "symbol": "DAI/USD"
-      },
-      {
-        "exchange": "gate",
-        "symbol": "DAI/USDT"
-      },
-      {
-        "exchange": "okx",
-        "symbol": "DAI/USDT"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "USDS/USD" },
     "sources": [
       {
@@ -1110,11 +1081,11 @@
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USDT"
       },
       {
-        "exchange": "bitfinex2",
+        "exchange": "bitfinex",
         "symbol": "LEO/USD"
       }
     ]
@@ -1475,23 +1446,6 @@
     ]
   },
   {
-    "feed": { "category": 1, "name": "FTM/USD" },
-    "sources": [
-      {
-        "exchange": "kraken",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitfinex2",
-        "symbol": "FTM/USD"
-      },
-      {
-        "exchange": "bitso",
-        "symbol": "FTM/USD"
-      }
-    ]
-  },
-  {
     "feed": { "category": 1, "name": "ONDO/USD" },
     "sources": [
       {
@@ -1553,7 +1507,7 @@
       },
       {
         "exchange": "kraken",
-        "symbol": "TAO/USDT"
+        "symbol": "TAO/USD"
       }
     ]
   },
