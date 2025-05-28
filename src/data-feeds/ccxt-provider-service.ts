@@ -183,8 +183,31 @@ export class CcxtFeed implements BaseDataFeed {
     } else if (exchange.has["watchTrades"]) {
       marketIds.forEach(marketId => void this.watchTradesForSymbol(exchange, marketId));
     } else {
-      this.logger.warn(`Not tracking ${exchange.id} for symbols ${marketIds}`);
+      this.logger.warn(`Exchange ${exchange.id} does not support watching trades, polling for trades instead`);
+      this.fetchTrades(exchange, marketIds, exchangeName);
     }
+  }
+
+  private fetchTrades(exchange: Exchange, marketIds: string[], exchangeName: string) {
+    setInterval(async () => {
+      try {
+        for (const marketId of marketIds) {
+          const trades = await exchange.fetchTrades(marketId);
+          if (trades.length > 0) {
+            trades.sort((a, b) => b.timestamp - a.timestamp);
+            const latestTrade = trades[0];
+            if (latestTrade.timestamp > (this.latestPrice.get(latestTrade.symbol)?.get(exchange.id)?.time || 0)) {
+              this.setPrice(exchange.id, latestTrade.symbol, latestTrade.price, latestTrade.timestamp);
+            }
+          } else {
+            this.logger.warn(`No trades found for ${marketId} on ${exchangeName}`);
+          }
+        }
+      } catch (error) {
+        const err = asError(error);
+        this.logger.error(`Error fetching trades for ${exchangeName}/${marketIds}: ${err.message}, will retry.`);
+      }
+    }, 1000);
   }
 
   private async watchTradesForSymbols(exchange: Exchange, marketIds: string[]) {
