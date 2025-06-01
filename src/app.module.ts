@@ -5,9 +5,8 @@ import { CcxtFeed } from "./data-feeds/ccxt-provider-service";
 import { RandomFeed } from "./data-feeds/random-feed";
 import { BaseDataFeed } from "./data-feeds/base-feed";
 import { FixedFeed } from "./data-feeds/fixed-feed";
-import { FtsoCcxtFeed } from "./data-feeds/ftso-ccxt-feed";
 import dotenv from "dotenv";
-import { CustomWsFeed } from "./data-feeds/custom-ws-feed";
+import { WsFeed } from "./data-feeds/ws-feed";
 
 dotenv.config();
 
@@ -26,12 +25,8 @@ dotenv.config();
           dataFeed = new FixedFeed();
         } else if (providerImpl === "random") {
           dataFeed = new RandomFeed();
-        } else if (providerImpl === "ftsoccxt") {
-          const ftsoCcxtFeed = new FtsoCcxtFeed();
-          await ftsoCcxtFeed.start();
-          dataFeed = ftsoCcxtFeed;
-        } else if (providerImpl === "customws") {
-          dataFeed = new CustomWsFeed();
+        } else if (providerImpl === "ws") {
+          dataFeed = new WsFeed();
         } else {
           const ccxtFeed = new CcxtFeed();
           await ccxtFeed.start();

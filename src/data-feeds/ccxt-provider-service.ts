@@ -575,7 +575,8 @@ async function logSupportedMarketsForFeeds(feeds: FeedConfig[], logger: Logger) 
     //"ascendex",
     //"probit",
     //
-    "bitmart",
+    //"bitrue",
+    "probit",
   ];
 
   // Map aus aktiven sources (exchange+symbol)

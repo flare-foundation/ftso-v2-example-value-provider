@@ -159,6 +159,10 @@ export async function storeSubmittedPrice(
   onchain: number
 ): Promise<void> {
   try {
+    submitted = typeof submitted === "number" && !Number.isNaN(submitted) ? submitted : 0;
+    ccxt = typeof ccxt === "number" && !Number.isNaN(ccxt) ? ccxt : 0;
+    onchain = typeof onchain === "number" && !Number.isNaN(onchain) ? onchain : 0;
+
     const [rows] = await pool.query<RowDataPacket[]>(`SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`, [
       feedName,
     ]);
@@ -188,6 +192,52 @@ export async function storeSubmittedPrice(
   } catch (err) {
     console.error("❌ Fehler bei storeSubmittedPrice:", err);
   }
+}
+
+export async function storeSubmittedPriceExtended(
+  feedName: string,
+  votingRoundId: number,
+  submitted: number,
+  ccxt: number,
+  onchain: number,
+  meta: (number | undefined)[] = [],
+  strategyName?: string
+): Promise<void> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT id FROM ftso_feeds WHERE feed_name = ? LIMIT 1`,
+    [feedName]
+  );
+
+  if (rows.length === 0) {
+    console.warn(`⚠️ Kein Feed mit feed_name='${feedName}' gefunden – Preis wird nicht gespeichert.`);
+    return;
+  }
+
+  const feedId = rows[0].id;
+  const m = [...meta, undefined, undefined, undefined, undefined, undefined].slice(0, 5);
+
+  await pool.query(`INSERT IGNORE INTO voting_rounds (id) VALUES (?)`, [votingRoundId]);
+
+  await pool.query(
+    `INSERT INTO price_submissions (
+      feed_id, voting_round_id,
+      submitted_price, ccxt_price, onchain_price,
+      strategy_meta_1, strategy_meta_2, strategy_meta_3, strategy_meta_4, strategy_meta_5,
+      strategy_name
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+      submitted_price = VALUES(submitted_price),
+      ccxt_price = VALUES(ccxt_price),
+      onchain_price = VALUES(onchain_price),
+      strategy_meta_1 = VALUES(strategy_meta_1),
+      strategy_meta_2 = VALUES(strategy_meta_2),
+      strategy_meta_3 = VALUES(strategy_meta_3),
+      strategy_meta_4 = VALUES(strategy_meta_4),
+      strategy_meta_5 = VALUES(strategy_meta_5),
+      strategy_name = VALUES(strategy_name)
+  `,
+    [feedId, votingRoundId, submitted, ccxt, onchain, ...m, strategyName]
+  );
 }
 
 export async function updateOnchainDecimalsIfNull(feedName: string, onchainDecimals: number): Promise<void> {
