@@ -14,7 +14,7 @@ COPY . ./
 
 RUN yarn build
 
-FROM node:18-slim AS runtime
+FROM gcr.io/distroless/nodejs20 AS runtime
 
 WORKDIR /app
 
@@ -22,4 +22,4 @@ COPY --from=nodemodules /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
 COPY src/config src/config
 
-CMD ["node", "dist/main.js"]
+CMD ["dist/main.js"]
