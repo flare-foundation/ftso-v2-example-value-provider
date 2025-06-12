@@ -3,7 +3,7 @@ import ccxt, { Exchange, Trade } from "ccxt";
 import { readFileSync } from "fs";
 import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
-import { retry, sleepFor } from "src/utils/retry";
+import { retry, RetryError, sleepFor } from "src/utils/retry";
 import { VolumeStore } from "./volumes";
 import { asError } from "../utils/error";
 
@@ -184,30 +184,43 @@ export class CcxtFeed implements BaseDataFeed {
       marketIds.forEach(marketId => void this.watchTradesForSymbol(exchange, marketId));
     } else {
       this.logger.warn(`Exchange ${exchange.id} does not support watching trades, polling for trades instead`);
-      this.fetchTrades(exchange, marketIds, exchangeName);
+      void this.fetchTrades(exchange, marketIds, exchangeName);
     }
   }
 
-  private fetchTrades(exchange: Exchange, marketIds: string[], exchangeName: string) {
-    setInterval(async () => {
+  private async fetchTrades(exchange: Exchange, marketIds: string[], exchangeName: string) {
+    while (true) {
       try {
-        for (const marketId of marketIds) {
-          const trades = await exchange.fetchTrades(marketId);
-          if (trades.length > 0) {
-            trades.sort((a, b) => b.timestamp - a.timestamp);
-            const latestTrade = trades[0];
-            if (latestTrade.timestamp > (this.latestPrice.get(latestTrade.symbol)?.get(exchange.id)?.time || 0)) {
-              this.setPrice(exchange.id, latestTrade.symbol, latestTrade.price, latestTrade.timestamp);
+        await retry(
+          async () => {
+            for (const marketId of marketIds) {
+              const trades = await exchange.fetchTrades(marketId);
+              if (trades.length > 0) {
+                trades.sort((a, b) => b.timestamp - a.timestamp);
+                const latestTrade = trades[0];
+                if (latestTrade.timestamp > (this.latestPrice.get(latestTrade.symbol)?.get(exchange.id)?.time || 0)) {
+                  this.setPrice(exchange.id, latestTrade.symbol, latestTrade.price, latestTrade.timestamp);
+                }
+              } else {
+                this.logger.warn(`No trades found for ${marketId} on ${exchangeName}`);
+              }
             }
-          } else {
-            this.logger.warn(`No trades found for ${marketId} on ${exchangeName}`);
-          }
-        }
-      } catch (error) {
-        const err = asError(error);
-        this.logger.error(`Error fetching trades for ${exchangeName}/${marketIds}: ${err.message}, will retry.`);
+          },
+          5,
+          2000,
+          this.logger
+        );
+        await sleepFor(1_000); // Wait 1 second before the next fetch
+      } catch (e) {
+        const error = asError(e);
+        if (error instanceof RetryError) {
+          this.logger.debug(
+            `Failed to fetch trades after multiple retries for ${exchange.id}/${marketIds}: ${error.cause}, will attempt again in 5 minutes`
+          );
+          await sleepFor(300_000); // Wait 5 minutes, we must be rate-limited
+        } else throw error;
       }
-    }, 1000);
+    }
   }
 
   private async watchTradesForSymbols(exchange: Exchange, marketIds: string[]) {
