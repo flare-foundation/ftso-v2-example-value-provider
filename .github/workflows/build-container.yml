@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
     - uses: actions/checkout@v4
       with:
@@ -41,3 +42,21 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ env.REPOSITORY_LC }}:${{ env.IMAGE_TAG }}
+    
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3.8.1
+
+    - name: Sign container image
+      env:
+        COSIGN_EXPERIMENTAL: 1
+      run: |
+        cosign sign --yes "ghcr.io/${{ env.REPOSITORY_LC }}:${{ env.IMAGE_TAG }}"
+
+    - name: Verify image signatures
+      env:
+        COSIGN_EXPERIMENTAL: 1
+      run: |
+        cosign verify \
+          --certificate-identity=https://github.com/${{ env.REPOSITORY_LC }}/.github/workflows/build-container.yml@${{ github.ref }} \
+          --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+          "ghcr.io/${{ env.REPOSITORY_LC }}:${{ env.IMAGE_TAG }}"
