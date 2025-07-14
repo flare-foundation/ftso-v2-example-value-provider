@@ -1896,5 +1896,38 @@
         "symbol": "BERA/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "OP/USD" },
+    "sources": [
+      {
+        "exchange": "binance",
+        "symbol": "OP/USDT"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "OP/USDT"
+      },
+      {
+        "exchange": "coinbase",
+        "symbol": "OP/USD"
+      },
+      {
+        "exchange": "okx",
+        "symbol": "OP/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "OP/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "OP/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "OP/USDT"
+      }
+    ]
   }
 ]
