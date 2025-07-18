@@ -7,6 +7,9 @@ import { retry, RetryError, sleepFor } from "src/utils/retry";
 import { VolumeStore } from "./volumes";
 import { asError } from "../utils/error";
 
+import prodFeeds from "../config/feeds.json";
+import testFeeds from "../config/test-feeds.json";
+
 enum FeedCategory {
   None = 0,
   Crypto = 1,
@@ -36,7 +39,6 @@ interface LoadResult {
 
 type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
 
-const CONFIG_PATH = "src/config/";
 const RETRY_BACKOFF_MS = 10_000;
 
 // Parameter for exponential decay in time-weighted median price calculation
@@ -124,51 +126,36 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
-    let usdtToUsd: number | undefined;
+    const usdtToUsd = (await this.getFeedPrice(usdtToUsdFeedId)) ?? undefined;
 
-    const convertToUsd = async (price: number) => {
-      if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
-      if (usdtToUsd === undefined) {
-        this.logger.warn(`Unable to retrieve USDT to USD conversion rate`);
-        return undefined;
-      }
-      return price * usdtToUsd;
-    };
+    const results = await Promise.all(
+      feeds.map(async feed => {
+        const merged = new Map<string, number>();
 
-    const res: FeedVolumeData[] = [];
-    for (const feed of feeds) {
-      const volMap = new Map<string, number>();
-
-      const volumeByExchange = this.volumes.get(feed.name);
-      if (volumeByExchange != undefined) {
-        for (const [exchange, volume] of volumeByExchange.entries()) {
-          volMap.set(exchange, volume.getVolume(volumeWindow));
-        }
-      }
-
-      if (feed.name.endsWith("/USD")) {
-        const usdtVolumeByExchange = this.volumes.get(feed.name.replace("/USD", "/USDT"));
-        if (usdtVolumeByExchange != undefined) {
-          for (const [exchange, volume] of usdtVolumeByExchange.entries()) {
-            const usdtVol = volume.getVolume(volumeWindow);
-            const usdVol = (await convertToUsd(usdtVol)) ?? 0;
-            volMap.set(exchange, usdVol + (volMap.get(exchange) || 0));
+        const baseVols = this.volumes.get(feed.name);
+        if (baseVols) {
+          for (const [ex, store] of baseVols) {
+            merged.set(ex, store.getVolume(volumeWindow));
           }
         }
-      }
 
-      res.push(<FeedVolumeData>{
-        feed: feed,
-        volumes: Array.from(volMap.entries()).map(
-          ([exchange, volume]) =>
-            <Volume>{
-              exchange: exchange,
-              volume: Math.round(volume),
+        if (feed.name.endsWith("/USD")) {
+          const usdtName = feed.name.replace("/USD", "/USDT");
+          const usdtVols = this.volumes.get(usdtName);
+          if (usdtVols) {
+            for (const [ex, store] of usdtVols) {
+              merged.set(ex, (merged.get(ex) || 0) + Math.round(store.getVolume(volumeWindow) * usdtToUsd));
             }
-        ),
-      });
-    }
-    return Promise.resolve(res);
+          }
+        }
+
+        return {
+          feed,
+          volumes: Array.from(merged, ([exchange, volume]) => ({ exchange, volume })),
+        };
+      })
+    );
+    return results;
   }
 
   private async initWatchTrades(exchangeToSymbols: Map<string, Set<string>>) {
@@ -454,20 +441,9 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   private loadConfig() {
-    const network = process.env.NETWORK as networks;
-    let configPath: string;
-    switch (network) {
-      case "local-test":
-        configPath = CONFIG_PATH + "test-feeds.json";
-        break;
-      default:
-        configPath = CONFIG_PATH + "feeds.json";
-    }
+    const config = process.env.NETWORK === "local-test" ? testFeeds : prodFeeds;
 
     try {
-      const jsonString = readFileSync(configPath, "utf-8");
-      const config: FeedConfig[] = JSON.parse(jsonString);
-
       if (config.find(feed => feedsEqual(feed.feed, usdtToUsdFeedId)) === undefined) {
         throw new Error("Must provide USDT feed sources, as it is used for USD conversion.");
       }
