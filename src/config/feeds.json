@@ -1929,5 +1929,30 @@
         "symbol": "OP/USDT"
       }
     ]
+  },
+  {
+    "feed": { "category": 1, "name": "PUMP/USD" },
+    "sources": [
+      {
+        "exchange": "coinbase",
+        "symbol": "PUMP/USD"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "PUMP/USDT"
+      },
+      {
+        "exchange": "mexc",
+        "symbol": "PUMP/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "PUMP/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "PUMP/USDT"
+      }
+    ]
   }
 ]
