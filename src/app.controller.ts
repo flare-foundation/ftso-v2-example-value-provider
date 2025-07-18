@@ -40,7 +40,7 @@ export class ExampleProviderController {
   @Post("volumes/")
   async getFeedVolumes(
     @Body() body: FeedValuesRequest,
-    @Query("window") windowSec: number = 60
+    @Query("window", ParseIntPipe) windowSec: number = 60
   ): Promise<FeedVolumesResponse> {
     const values = await this.providerService.getVolumes(body.feeds, windowSec);
     this.logger.log(`Feed volumes for last ${windowSec} seconds: ${JSON.stringify(values)}`);
