@@ -29,6 +29,11 @@ interface PriceInfo {
   exchange: string;
 }
 
+interface LoadResult {
+  exchangeName: string;
+  result: PromiseSettledResult<void>;
+}
+
 type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
 
 const CONFIG_PATH = "src/config/";
@@ -44,6 +49,7 @@ export class CcxtFeed implements BaseDataFeed {
   private readonly logger = new Logger(CcxtFeed.name);
   protected initialized = false;
   private config: FeedConfig[];
+  private configByKey = new Map<string, FeedConfig>();
 
   private readonly exchangeByName: Map<string, Exchange> = new Map();
 
@@ -79,13 +85,21 @@ export class CcxtFeed implements BaseDataFeed {
       }
     }
 
-    for (const [exchangeName, loadExchange] of loadExchanges) {
-      try {
-        this.logger.log(`Initializing exchange ${exchangeName}`);
-        await loadExchange;
-        this.logger.log(`Exchange ${exchangeName} initialized`);
-      } catch (e) {
-        this.logger.warn(`Failed to load markets for ${exchangeName}, ignoring: ${e}`);
+    // Load all exchanges in parallel
+    this.logger.log(`Initializing all exchanges`);
+    const loadResults: LoadResult[] = await Promise.all(
+      loadExchanges.map(async ([exchangeName, loadPromise]) => {
+        const result = await Promise.allSettled([loadPromise]);
+        // result[0] is the settled state of loadPromise
+        return { exchangeName, result: result[0] };
+      })
+    );
+
+    for (const { exchangeName, result } of loadResults) {
+      if (result.status === "fulfilled") {
+        this.logger.log(`Exchange ${exchangeName} initialized successfully.`);
+      } else {
+        this.logger.warn(`Failed to load markets for ${exchangeName}: ${result.reason}`);
         exchangeToSymbols.delete(exchangeName);
       }
     }
@@ -300,7 +314,8 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   private async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
-    const config = this.config.find(config => feedsEqual(config.feed, feedId));
+    const key = this.feedKey(feedId);
+    const config = this.configByKey.get(key);
     if (!config) {
       this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
       return undefined;
@@ -433,6 +448,11 @@ export class CcxtFeed implements BaseDataFeed {
     return undefined;
   }
 
+  // helper to normalize FeedId → string
+  private feedKey(feed: FeedId): string {
+    return `${feed.category}:${feed.name}`;
+  }
+
   private loadConfig() {
     const network = process.env.NETWORK as networks;
     let configPath: string;
@@ -450,6 +470,10 @@ export class CcxtFeed implements BaseDataFeed {
 
       if (config.find(feed => feedsEqual(feed.feed, usdtToUsdFeedId)) === undefined) {
         throw new Error("Must provide USDT feed sources, as it is used for USD conversion.");
+      }
+
+      for (const cfg of config) {
+        this.configByKey.set(this.feedKey(cfg.feed), cfg);
       }
 
       this.logger.log(`Supported feeds: ${JSON.stringify(config.map(f => f.feed))}`);
