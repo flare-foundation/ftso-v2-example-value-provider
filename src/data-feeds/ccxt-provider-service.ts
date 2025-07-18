@@ -1,7 +1,6 @@
 import { Logger } from "@nestjs/common";
 import ccxt, { Exchange, Trade } from "ccxt";
-import { readFileSync } from "fs";
-import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
+import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { retry, RetryError, sleepFor } from "src/utils/retry";
 import { VolumeStore } from "./volumes";
@@ -36,8 +35,6 @@ interface LoadResult {
   exchangeName: string;
   result: PromiseSettledResult<void>;
 }
-
-type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
 
 const RETRY_BACKOFF_MS = 10_000;
 
@@ -130,28 +127,31 @@ export class CcxtFeed implements BaseDataFeed {
 
     const results = await Promise.all(
       feeds.map(async feed => {
-        const merged = new Map<string, number>();
+        const volMap = new Map<string, number>();
 
-        const baseVols = this.volumes.get(feed.name);
-        if (baseVols) {
-          for (const [ex, store] of baseVols) {
-            merged.set(ex, store.getVolume(volumeWindow));
+        const volByExchange = this.volumes.get(feed.name);
+        if (volByExchange) {
+          for (const [exchange, volStore] of volByExchange) {
+            volMap.set(exchange, volStore.getVolume(volumeWindow));
           }
         }
 
         if (feed.name.endsWith("/USD")) {
           const usdtName = feed.name.replace("/USD", "/USDT");
-          const usdtVols = this.volumes.get(usdtName);
-          if (usdtVols) {
-            for (const [ex, store] of usdtVols) {
-              merged.set(ex, (merged.get(ex) || 0) + Math.round(store.getVolume(volumeWindow) * usdtToUsd));
+          const usdtVolByExchange = this.volumes.get(usdtName);
+          if (usdtVolByExchange) {
+            for (const [exchange, volStore] of usdtVolByExchange) {
+              volMap.set(
+                exchange,
+                (volMap.get(exchange) || 0) + Math.round(volStore.getVolume(volumeWindow) * usdtToUsd)
+              );
             }
           }
         }
 
         return {
           feed,
-          volumes: Array.from(merged, ([exchange, volume]) => ({ exchange, volume })),
+          volumes: Array.from(volMap, ([exchange, volume]) => ({ exchange, volume })),
         };
       })
     );
