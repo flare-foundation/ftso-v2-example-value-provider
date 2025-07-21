@@ -125,36 +125,35 @@ export class CcxtFeed implements BaseDataFeed {
   async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
     const usdtToUsd = (await this.getFeedPrice(usdtToUsdFeedId)) ?? undefined;
 
-    const results = await Promise.all(
-      feeds.map(async feed => {
-        const volMap = new Map<string, number>();
+    const results: FeedVolumeData[] = [];
 
-        const volByExchange = this.volumes.get(feed.name);
-        if (volByExchange) {
-          for (const [exchange, volStore] of volByExchange) {
-            volMap.set(exchange, volStore.getVolume(volumeWindow));
+    for (const feed of feeds) {
+      const volMap = new Map<string, number>();
+
+      const volByExchange = this.volumes.get(feed.name);
+      if (volByExchange) {
+        for (const [exchange, volStore] of volByExchange) {
+          volMap.set(exchange, volStore.getVolume(volumeWindow));
+        }
+      }
+
+      if (feed.name.endsWith("/USD") && usdtToUsd !== undefined) {
+        const usdtName = feed.name.replace("/USD", "/USDT");
+        const usdtVolByExchange = this.volumes.get(usdtName);
+        if (usdtVolByExchange) {
+          for (const [exchange, volStore] of usdtVolByExchange) {
+            const baseVol = volMap.get(exchange) || 0;
+            const usdtVol = Math.round(volStore.getVolume(volumeWindow) * usdtToUsd);
+            volMap.set(exchange, baseVol + usdtVol);
           }
         }
+      }
 
-        if (feed.name.endsWith("/USD")) {
-          const usdtName = feed.name.replace("/USD", "/USDT");
-          const usdtVolByExchange = this.volumes.get(usdtName);
-          if (usdtVolByExchange) {
-            for (const [exchange, volStore] of usdtVolByExchange) {
-              volMap.set(
-                exchange,
-                (volMap.get(exchange) || 0) + Math.round(volStore.getVolume(volumeWindow) * usdtToUsd)
-              );
-            }
-          }
-        }
-
-        return {
-          feed,
-          volumes: Array.from(volMap, ([exchange, volume]) => ({ exchange, volume })),
-        };
-      })
-    );
+      results.push({
+        feed,
+        volumes: Array.from(volMap, ([exchange, volume]) => ({ exchange, volume })),
+      });
+    }
     return results;
   }
 
