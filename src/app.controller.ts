@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseIntPipe, Post, Inject, Logger, Query } from "@nestjs/common";
+import { Body, Controller, Param, DefaultValuePipe, ParseIntPipe, Post, Inject, Logger, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ExampleProviderService } from "./app.service";
 import {
@@ -40,7 +40,7 @@ export class ExampleProviderController {
   @Post("volumes/")
   async getFeedVolumes(
     @Body() body: FeedValuesRequest,
-    @Query("window") windowSec: number = 60
+    @Query("window", new DefaultValuePipe("60"), ParseIntPipe) windowSec: number
   ): Promise<FeedVolumesResponse> {
     const values = await this.providerService.getVolumes(body.feeds, windowSec);
     this.logger.log(`Feed volumes for last ${windowSec} seconds: ${JSON.stringify(values)}`);

@@ -31,4 +31,4 @@ import { FixedFeed } from "./data-feeds/fixed-feed";
     },
   ],
 })
-export class RandomExampleProviderModule {}
+export class AppModule {}

@@ -1,25 +1,16 @@
-FROM node:22-slim AS nodemodules
-
+FROM node:22-alpine AS builder
 WORKDIR /app
-
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --network-timeout 100000
-
-FROM node:22-slim AS build
-
-WORKDIR /app
-
-COPY --from=nodemodules /app/node_modules /app/node_modules
-COPY . ./
-
+RUN --mount=type=cache,target=/root/.cache/yarn \
+    yarn install --frozen-lockfile
+COPY . .
 RUN yarn build
+RUN yarn install --production --frozen-lockfile \
+    && yarn cache clean
 
-FROM node:22-slim AS runtime
-
+FROM node:22-alpine AS release
 WORKDIR /app
-
-COPY --from=nodemodules /app/node_modules /app/node_modules
-COPY --from=build /app/dist /app/dist
-COPY src/config src/config
-
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
 CMD ["node", "dist/main.js"]

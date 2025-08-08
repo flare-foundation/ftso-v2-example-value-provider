@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { NestFactory } from "@nestjs/core";
-import { RandomExampleProviderModule } from "./app.module";
+import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import { LogLevel } from "@nestjs/common";
@@ -16,7 +16,7 @@ async function bootstrap() {
     logLevels = ["warn"];
   }
 
-  const app = await NestFactory.create(RandomExampleProviderModule, { logger: logLevels });
+  const app = await NestFactory.create(AppModule, { logger: logLevels });
   app.use(helmet());
   const basePath = process.env.VALUE_PROVIDER_CLIENT_BASE_PATH ?? "";
 

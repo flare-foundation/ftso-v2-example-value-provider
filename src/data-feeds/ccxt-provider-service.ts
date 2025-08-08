@@ -1,11 +1,13 @@
 import { Logger } from "@nestjs/common";
 import ccxt, { Exchange, Trade } from "ccxt";
-import { readFileSync } from "fs";
-import { FeedId, FeedValueData, FeedVolumeData, Volume } from "../dto/provider-requests.dto";
+import { FeedId, FeedValueData, FeedVolumeData } from "../dto/provider-requests.dto";
 import { BaseDataFeed } from "./base-feed";
 import { retry, RetryError, sleepFor } from "src/utils/retry";
 import { VolumeStore } from "./volumes";
 import { asError } from "../utils/error";
+
+import prodFeeds from "../config/feeds.json";
+import testFeeds from "../config/test-feeds.json";
 
 enum FeedCategory {
   None = 0,
@@ -29,9 +31,11 @@ interface PriceInfo {
   exchange: string;
 }
 
-type networks = "local-test" | "from-env" | "coston2" | "coston" | "songbird";
+interface LoadResult {
+  exchangeName: string;
+  result: PromiseSettledResult<void>;
+}
 
-const CONFIG_PATH = "src/config/";
 const RETRY_BACKOFF_MS = 10_000;
 
 // Parameter for exponential decay in time-weighted median price calculation
@@ -44,6 +48,7 @@ export class CcxtFeed implements BaseDataFeed {
   private readonly logger = new Logger(CcxtFeed.name);
   protected initialized = false;
   private config: FeedConfig[];
+  private configByKey = new Map<string, FeedConfig>();
 
   private readonly exchangeByName: Map<string, Exchange> = new Map();
 
@@ -79,13 +84,21 @@ export class CcxtFeed implements BaseDataFeed {
       }
     }
 
-    for (const [exchangeName, loadExchange] of loadExchanges) {
-      try {
-        this.logger.log(`Initializing exchange ${exchangeName}`);
-        await loadExchange;
-        this.logger.log(`Exchange ${exchangeName} initialized`);
-      } catch (e) {
-        this.logger.warn(`Failed to load markets for ${exchangeName}, ignoring: ${e}`);
+    // Load all exchanges in parallel
+    this.logger.log(`Initializing all exchanges`);
+    const loadResults: LoadResult[] = await Promise.all(
+      loadExchanges.map(async ([exchangeName, loadPromise]) => {
+        const result = await Promise.allSettled([loadPromise]);
+        // result[0] is the settled state of loadPromise
+        return { exchangeName, result: result[0] };
+      })
+    );
+
+    for (const { exchangeName, result } of loadResults) {
+      if (result.status === "fulfilled") {
+        this.logger.log(`Exchange ${exchangeName} initialized successfully.`);
+      } else {
+        this.logger.warn(`Failed to load markets for ${exchangeName}: ${result.reason}`);
         exchangeToSymbols.delete(exchangeName);
       }
     }
@@ -110,51 +123,38 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   async getVolumes(feeds: FeedId[], volumeWindow: number): Promise<FeedVolumeData[]> {
-    let usdtToUsd: number | undefined;
+    const usdtToUsd = (await this.getFeedPrice(usdtToUsdFeedId)) ?? undefined;
 
-    const convertToUsd = async (price: number) => {
-      if (usdtToUsd === undefined) usdtToUsd = await this.getFeedPrice(usdtToUsdFeedId);
-      if (usdtToUsd === undefined) {
-        this.logger.warn(`Unable to retrieve USDT to USD conversion rate`);
-        return undefined;
-      }
-      return price * usdtToUsd;
-    };
+    const results: FeedVolumeData[] = [];
 
-    const res: FeedVolumeData[] = [];
     for (const feed of feeds) {
       const volMap = new Map<string, number>();
 
-      const volumeByExchange = this.volumes.get(feed.name);
-      if (volumeByExchange != undefined) {
-        for (const [exchange, volume] of volumeByExchange.entries()) {
-          volMap.set(exchange, volume.getVolume(volumeWindow));
+      const volByExchange = this.volumes.get(feed.name);
+      if (volByExchange) {
+        for (const [exchange, volStore] of volByExchange) {
+          volMap.set(exchange, volStore.getVolume(volumeWindow));
         }
       }
 
-      if (feed.name.endsWith("/USD")) {
-        const usdtVolumeByExchange = this.volumes.get(feed.name.replace("/USD", "/USDT"));
-        if (usdtVolumeByExchange != undefined) {
-          for (const [exchange, volume] of usdtVolumeByExchange.entries()) {
-            const usdtVol = volume.getVolume(volumeWindow);
-            const usdVol = (await convertToUsd(usdtVol)) ?? 0;
-            volMap.set(exchange, usdVol + (volMap.get(exchange) || 0));
+      if (feed.name.endsWith("/USD") && usdtToUsd !== undefined) {
+        const usdtName = feed.name.replace("/USD", "/USDT");
+        const usdtVolByExchange = this.volumes.get(usdtName);
+        if (usdtVolByExchange) {
+          for (const [exchange, volStore] of usdtVolByExchange) {
+            const baseVol = volMap.get(exchange) || 0;
+            const usdtVol = Math.round(volStore.getVolume(volumeWindow) * usdtToUsd);
+            volMap.set(exchange, baseVol + usdtVol);
           }
         }
       }
 
-      res.push(<FeedVolumeData>{
-        feed: feed,
-        volumes: Array.from(volMap.entries()).map(
-          ([exchange, volume]) =>
-            <Volume>{
-              exchange: exchange,
-              volume: Math.round(volume),
-            }
-        ),
+      results.push({
+        feed,
+        volumes: Array.from(volMap, ([exchange, volume]) => ({ exchange, volume })),
       });
     }
-    return Promise.resolve(res);
+    return results;
   }
 
   private async initWatchTrades(exchangeToSymbols: Map<string, Set<string>>) {
@@ -300,7 +300,8 @@ export class CcxtFeed implements BaseDataFeed {
   }
 
   private async getFeedPrice(feedId: FeedId): Promise<number | undefined> {
-    const config = this.config.find(config => feedsEqual(config.feed, feedId));
+    const key = this.feedKey(feedId);
+    const config = this.configByKey.get(key);
     if (!config) {
       this.logger.warn(`No config found for ${JSON.stringify(feedId)}`);
       return undefined;
@@ -433,23 +434,21 @@ export class CcxtFeed implements BaseDataFeed {
     return undefined;
   }
 
+  // helper to normalize FeedId → string
+  private feedKey(feed: FeedId): string {
+    return `${feed.category}:${feed.name}`;
+  }
+
   private loadConfig() {
-    const network = process.env.NETWORK as networks;
-    let configPath: string;
-    switch (network) {
-      case "local-test":
-        configPath = CONFIG_PATH + "test-feeds.json";
-        break;
-      default:
-        configPath = CONFIG_PATH + "feeds.json";
-    }
+    const config = process.env.NETWORK === "local-test" ? testFeeds : prodFeeds;
 
     try {
-      const jsonString = readFileSync(configPath, "utf-8");
-      const config: FeedConfig[] = JSON.parse(jsonString);
-
       if (config.find(feed => feedsEqual(feed.feed, usdtToUsdFeedId)) === undefined) {
         throw new Error("Must provide USDT feed sources, as it is used for USD conversion.");
+      }
+
+      for (const cfg of config) {
+        this.configByKey.set(this.feedKey(cfg.feed), cfg);
       }
 
       this.logger.log(`Supported feeds: ${JSON.stringify(config.map(f => f.feed))}`);
