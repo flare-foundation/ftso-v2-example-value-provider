@@ -562,7 +562,7 @@
         "symbol": "USDC/USDT"
       },
       {
-        "exchange": "lbank",
+        "exchange": "bitget",
         "symbol": "USDC/USDT"
       }
     ]
@@ -642,7 +642,7 @@
         "symbol": "TRX/USDT"
       },
       {
-        "exchange": "lbank",
+        "exchange": "okx",
         "symbol": "TRX/USDT"
       },
       {
@@ -1834,7 +1834,7 @@
         "symbol": "PAXG/USDT"
       },
       {
-        "exchange": "lbank",
+        "exchange": "mexc",
         "symbol": "PAXG/USDT"
       },
       {
