@@ -1986,5 +1986,33 @@
         "symbol": "XPL/USD"
       }
     ]
+  },
+  {
+    "feed": {
+      "category": 1,
+      "name": "MON/USD"
+    },
+    "sources": [
+      {
+        "exchange": "coinbase",
+        "symbol": "MON/USD"
+      },
+      {
+        "exchange": "bybit",
+        "symbol": "MON/USDT"
+      },
+      {
+        "exchange": "gate",
+        "symbol": "MON/USDT"
+      },
+      {
+        "exchange": "kucoin",
+        "symbol": "MON/USDT"
+      },
+      {
+        "exchange": "bitget",
+        "symbol": "MON/USDT"
+      }
+    ]
   }
 ]
