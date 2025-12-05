@@ -98,8 +98,11 @@ export class CcxtFeed implements BaseDataFeed {
       if (result.status === "fulfilled") {
         this.logger.log(`Exchange ${exchangeName} initialized successfully.`);
       } else {
-        this.logger.warn(`Failed to load markets for ${exchangeName}: ${result.reason}`);
+        this.logger.error(
+          `Failed to load markets for ${exchangeName}: ${result.reason}. Removing exchange, restart provider to try again.`
+        );
         exchangeToSymbols.delete(exchangeName);
+        this.exchangeByName.delete(exchangeName);
       }
     }
 
