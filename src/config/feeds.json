@@ -52,10 +52,6 @@
       {
         "exchange": "mexc",
         "symbol": "SGB/USDT"
-      },
-      {
-        "exchange": "bitstamp",
-        "symbol": "SGB/USD"
       }
     ]
   },
@@ -1685,10 +1681,6 @@
       "name": "JOULE/USD"
     },
     "sources": [
-      {
-        "exchange": "probit",
-        "symbol": "JOULE/USDT"
-      },
       {
         "exchange": "bitrue",
         "symbol": "JOULE/USDT"
