@@ -74,12 +74,26 @@ export class CcxtFeed implements BaseDataFeed {
     this.logger.log(`Initializing exchanges with trade limit ${TRADES_HISTORY_SIZE}`);
     for (const exchangeName of exchangeToSymbols.keys()) {
       try {
+        // Check if exchange exists in CCXT Pro
+        if (!ccxt.pro[exchangeName] || typeof ccxt.pro[exchangeName] !== 'function') {
+          // Suggest common typos/corrections
+          const suggestions: Record<string, string> = {
+            'mex': 'mexc',
+            'binanceus': 'binance',
+            'krakenfutures': 'kraken',
+          };
+          const suggestion = suggestions[exchangeName.toLowerCase()];
+          const suggestionMsg = suggestion ? ` Did you mean "${suggestion}"?` : '';
+          this.logger.warn(`Exchange "${exchangeName}" not found in CCXT Pro. Skipping.${suggestionMsg}`);
+          exchangeToSymbols.delete(exchangeName);
+          continue;
+        }
         const exchange: Exchange = new ccxt.pro[exchangeName]({ newUpdates: true });
         exchange.options["tradesLimit"] = TRADES_HISTORY_SIZE;
         this.exchangeByName.set(exchangeName, exchange);
         loadExchanges.push([exchangeName, retry(async () => exchange.loadMarkets(), 2, RETRY_BACKOFF_MS, this.logger)]);
       } catch (e) {
-        this.logger.warn(`Failed to initialize exchange ${exchangeName}, ignoring: ${e}`);
+        this.logger.warn(`Failed to initialize exchange ${exchangeName}, ignoring: ${asError(e).message}`);
         exchangeToSymbols.delete(exchangeName);
       }
     }
