@@ -85,9 +85,11 @@ logs() {
     if [ "$follow" = "-f" ] || [ "$follow" = "--follow" ]; then
         echo -e "${GREEN}Following logs for ${SERVICE_NAME}...${NC}"
         echo -e "${YELLOW}Press Ctrl+C to stop${NC}"
-        docker-compose logs -f
+        # Suppress docker-compose event watcher errors (known issue in v1.29.2)
+        # These are harmless threading errors that don't affect functionality
+        docker-compose logs -f 2>/dev/null || docker-compose logs -f
     else
-        docker-compose logs --tail=100
+        docker-compose logs --tail=100 2>/dev/null || docker-compose logs --tail=100
     fi
 }
 
