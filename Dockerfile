@@ -2,8 +2,8 @@ FROM node:22-alpine@sha256:d2166de198f26e17e5a442f537754dd616ab069c47cc57b889310
 
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN --mount=type=cache,target=/root/.cache/yarn \
-    yarn install --frozen-lockfile
+# Cache mount requires BuildKit - use regular install if BuildKit is not available
+RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 RUN yarn install --production --frozen-lockfile \
