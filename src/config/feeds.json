@@ -18,7 +18,11 @@
         "symbol": "FLR/USDT"
       },
       {
-        "exchange": "mex",
+        "exchange": "bitmart",
+        "symbol": "FLR/USDT"
+      },
+      {
+        "exchange": "mexc",
         "symbol": "FLR/USDT"
       },
       {
