@@ -54,3 +54,11 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Docker build artifacts and temporary files
+
+# Docker Compose override files (user-specific)
+docker-compose.override.yml
+
+# Docker layer cache files and build artifacts
+# Note: Docker build cache files are typically cleaned up automatically
