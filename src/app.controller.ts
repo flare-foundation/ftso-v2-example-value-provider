@@ -20,6 +20,9 @@ export class ExampleProviderController {
     @Param("votingRoundId", ParseIntPipe) votingRoundId: number,
     @Body() body: FeedValuesRequest
   ): Promise<RoundFeedValuesResponse> {
+    if (!body || !body.feeds) {
+      throw new Error("Invalid request body: feeds array is required");
+    }
     const values = await this.providerService.getValues(body.feeds);
     this.logger.log(`Feed values for voting round ${votingRoundId}: ${JSON.stringify(values)}`);
     return {

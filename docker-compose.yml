@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  ftso-v2-provider:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ftso-v2-provider
+    restart: unless-stopped
+    ports:
+      - "${VALUE_PROVIDER_CLIENT_PORT:-3101}:3101"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_OPTIONS=--max-old-space-size=384
+      - VALUE_PROVIDER_CLIENT_PORT=${VALUE_PROVIDER_CLIENT_PORT:-3101}
+      - VALUE_PROVIDER_CLIENT_BASE_PATH=${VALUE_PROVIDER_CLIENT_BASE_PATH:-}
+      - VALUE_PROVIDER_IMPL=${VALUE_PROVIDER_IMPL:-}
+      - LOG_LEVEL=${LOG_LEVEL:-log}
+    # Optional: Create a .env file to override environment variables
+    # env_file:
+    #   - .env
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3101/api-doc',(r)=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ftso-network
+    # Resource limits (for docker-compose, not Swarm mode)
+    cpus: '1.0'
+    mem_limit: 1024m
+    mem_reservation: 512m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  ftso-network:
+    driver: bridge
+
