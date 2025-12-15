@@ -11,7 +11,7 @@ services:
       - "${VALUE_PROVIDER_CLIENT_PORT:-3101}:3101"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - NODE_OPTIONS=--max-old-space-size=1536
+      - NODE_OPTIONS=--max-old-space-size=2048
       - VALUE_PROVIDER_CLIENT_PORT=${VALUE_PROVIDER_CLIENT_PORT:-3101}
       - VALUE_PROVIDER_CLIENT_BASE_PATH=${VALUE_PROVIDER_CLIENT_BASE_PATH:-}
       - VALUE_PROVIDER_IMPL=${VALUE_PROVIDER_IMPL:-}
@@ -29,8 +29,8 @@ services:
       - ftso-network
     # Resource limits (for docker-compose, not Swarm mode)
     cpus: '1.0'
-    mem_limit: 3072m
-    mem_reservation: 1536m
+    mem_limit: 4096m
+    mem_reservation: 2048m
     logging:
       driver: "json-file"
       options:
