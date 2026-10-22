@@ -1,4 +1,4 @@
-FROM node:24.15.0-slim AS builder
+FROM node:24.22.1-slim AS builder
 
 WORKDIR /app
 RUN corepack enable
@@ -9,7 +9,7 @@ COPY . .
 RUN pnpm build
 RUN pnpm prune --prod
 
-FROM node:24.15.0-slim AS release
+FROM node:24.22.1-slim AS release
 
 WORKDIR /app
 ENV NODE_ENV=production
